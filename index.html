@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en-US">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="css/font.css">
+  <link rel="stylesheet" href="css/space.css">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+
+
+<body>
+
+  <div id="mySidenav" class="sidenav">
+    <a href="javascript:void(0)" class="closebtn" onclick="closeNav()">&times;</a>
+    <a>
+      <h3>Difficulty</h3>
+      <form>
+        <input type="radio" name="light" onchange="setDifficulty(this.value);" value="easy" checked>Easy<br/>
+        <input type="radio" name="light" onchange="setDifficulty(this.value);" value="medium">Medium<br/>
+        <input type="radio" name="light" onchange="setDifficulty(this.value);" value="hard">Hard<br/>
+      </form>
+    </a>
+    <a>
+      <h3>Blocks</h3>
+      Number of rows:    
+      <select name="blocks" id="blocks" onchange="setRowsNumber(this.value)">
+        <option value="2">2</option>
+        <option value="3">3</option>
+        <option value="4">4</option>
+        <option value="5" selected>5</option>
+        <option value="6">6</option>
+        <option value="7">7</option>
+        <option value="8">8</option>
+      </select>
+      Number of columns:
+      <select name="blocks" id="blocks" onchange="setColumnsNumber(this.value)">
+        <option value="4">4</option>
+        <option value="5">5</option>
+        <option value="6">6</option>
+        <option value="7">7</option>
+        <option value="8" selected>8</option>
+        <option value="9">9</option>
+        <option value="10">10</option>
+      </select>
+    </a>
+  </div> 
+  
+  <div>
+    <div id="stars"></div>
+    <div id="stars2"></div>
+    <div id="stars3"></div>
+  </div> 
+
+  <div id="mainArea">
+  
+    <img class="logo" src="assets/logo.png">
+    
+    <div class="button" onclick="playGame();">
+      <img src="assets/play.svg">
+      <h1>PLAY GAME</h1>
+    </div>
+
+    <div class="button" onclick="openNav();">
+      <img src="assets/settings.svg">
+      <h1>SETTINGS</h1>
+    </div>
+
+  </div>
+
+  <canvas id="scene"></canvas>
+
+  <div id="score">SCORE: 0</div>
+  <div id="result"></div>
+  <div id="legend">
+
+    <h3 class='legendText'>PADDLE MOVEMENT:</h3>
+    <img class="legendLogo" src="assets/mouse.png"></br>
+
+    <h3 class='legendText'>CAMERA MOVEMENT:</h3>
+    <img class="legendLogo" src="assets/buttons.png"></br>
+
+    <h3 class='legendText'>CAMERA ROTATION:</h3>
+    <img class="legendLogo" src="assets/keyboard.png">
+  </div>
+
+</body>
+
+<script type="text/javascript" src="js/twgl.js"></script>
+<script type="text/javascript" src="js/utils.js"></script>
+<script type="text/javascript" src="js/settings.js"></script>
+<script type="text/javascript" src="js/colors.js"></script>
+<script type="text/javascript" src="js/model.js"></script>
+<script type="text/javascript" src="js/control.js"></script>
+<script type="text/javascript" src="js/sphere.js"></script>
+<script type="text/javascript" src="js/cube.js"></script>
+<script type="text/javascript" src="js/view.js"></script>
+
+</html>
