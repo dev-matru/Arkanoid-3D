@@ -250,7 +250,6 @@ APP.renderer = (function() {
     } catch (e) {
       console.error('Arkanoid 3D: init error:', e);
     }
-    });
   }
 
   function isInitialized() { return initialized; }
