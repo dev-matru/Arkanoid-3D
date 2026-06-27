@@ -85,10 +85,20 @@ function doMouseWheel(event) {
 
 } 
 
+var gameLoopId = null;
+
+function restartGame() {
+    game.score = 0;
+    game.status = 'start';
+    document.getElementById("score").innerText = "SCORE: 0/" + game.maxScore;
+    document.getElementById("result").innerText = "";
+    buildArena();
+}
+
 function launchBall() {
 
     if(game.status == 'end')
-        window.location.reload();
+        restartGame();
     else game.status = 'play';
 
 }
