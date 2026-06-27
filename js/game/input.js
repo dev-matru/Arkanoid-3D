@@ -10,10 +10,13 @@ APP.input = (function() {
     // Mouse move → paddle
     canvas.addEventListener('mousemove', function(event) {
       var normX = (2 * event.pageX / gl.canvas.width) - 1;
-      var x = (normX * cfg.input.mouseRatio) * cfg.arena.width / 2 + cfg.arena.width / 2;
       var paddle = curArena.getPaddle();
-      if (paddle && x > 0 + paddle.width / 2 && x < cfg.arena.width - paddle.width / 2)
-        paddle.x = x;
+      if (!paddle) return;
+      // Mappa lineare 1:1 dall'arena allo schermo
+      var x = normX * cfg.arena.width / 2 + cfg.arena.width / 2;
+      // CLAMP sempre ai bordi dell'arena (non bloccare il movimento)
+      x = Math.max(paddle.width / 2, Math.min(cfg.arena.width - paddle.width / 2, x));
+      paddle.x = x;
     });
 
     // Mouse click → launch ball
