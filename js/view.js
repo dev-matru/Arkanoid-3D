@@ -226,7 +226,7 @@ async function init(){
   canvas = document.getElementById("scene");
   canvas.addEventListener("mousedown", launchBall, false);
   canvas.addEventListener("mousemove", doMouseMove, false);
- 	canvas.addEventListener("mousewheel", doMouseWheel, false);  
+ 	canvas.addEventListener("wheel", doMouseWheel, {passive: false});  
   window.addEventListener("keydown", keyFunction, false);
 
   gl = canvas.getContext("webgl2");
