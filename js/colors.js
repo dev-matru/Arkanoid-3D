@@ -1,3 +1,4 @@
+'use strict';
 function shuffle(array) {
     var currentIndex = array.length,  randomIndex;
     while (0 !== currentIndex) {

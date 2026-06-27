@@ -1,3 +1,4 @@
+'use strict';
 var ball, paddle, walls, blocks;
 
 function buildArena(){

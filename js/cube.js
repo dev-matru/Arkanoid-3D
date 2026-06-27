@@ -1,3 +1,4 @@
+'use strict';
 //3D cube vertex coordinates and indices
 
 var cubeVertices = [

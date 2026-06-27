@@ -1,3 +1,4 @@
+'use strict';
 var res = 30;
 var radius = 0.2;
 
