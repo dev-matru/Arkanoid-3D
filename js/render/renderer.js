@@ -24,7 +24,7 @@ APP.renderer = (function() {
     if (!gl) { document.write('WebGL 2.0 not supported'); return false; }
     shaders.resizeCanvasToDisplaySize(gl.canvas);
     gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
-    gl.clearColor(0.0, 0.0, 0.0, 0.0);
+    gl.clearColor(1.0, 1.0, 1.0, 1.0);
     gl.enable(gl.DEPTH_TEST);
     return true;
   }
@@ -230,14 +230,26 @@ APP.renderer = (function() {
     var page = path.split('/').pop();
     var baseDir = window.location.href.replace(page, '');
     var shaderDir = baseDir + 'shaders/';
+    console.log('Arkanoid 3D: loading shaders from', shaderDir);
     curGame.playSound('assets/song.mp3', 0.1);
-    shaders.loadFiles([shaderDir + 'vs.glsl', shaderDir + 'fs.glsl'], function(shaderText) {
-      programInfo = twgl.createProgramInfo(gl, [shaderText[0], shaderText[1]]);
-      createGeometries();
-      createUniforms();
-      APP.input.init(canvas, gl);
-      initialized = true;
-      if (callback) callback();
+    try {
+      shaders.loadFiles([shaderDir + 'vs.glsl', shaderDir + 'fs.glsl'], function(shaderText) {
+        console.log('Arkanoid 3D: shaders loaded, creating program...');
+        programInfo = twgl.createProgramInfo(gl, [shaderText[0], shaderText[1]]);
+        if (!programInfo) {
+          console.error('Arkanoid 3D: failed to create program info');
+          return;
+        }
+        createGeometries();
+        createUniforms();
+        APP.input.init(canvas, gl);
+        initialized = true;
+        console.log('Arkanoid 3D: renderer initialized successfully');
+        if (callback) callback();
+      });
+    } catch (e) {
+      console.error('Arkanoid 3D: init error:', e);
+    }
     });
   }
 

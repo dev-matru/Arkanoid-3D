@@ -3,7 +3,6 @@
 APP.ui = (function() {
   'use strict';
   var cfg = APP.config;
-  var curArena = APP.arena;
   var curRenderer = APP.renderer;
 
   function openNav() { document.getElementById('mySidenav').style.width = '400px'; }
@@ -21,11 +20,9 @@ APP.ui = (function() {
 
     if (!curRenderer.isInitialized()) {
       curRenderer.init(function() {
-        curArena.build();
         curRenderer.start();
       });
     } else {
-      curArena.build();
       curRenderer.start();
     }
   }
