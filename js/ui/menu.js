@@ -1,0 +1,44 @@
+'use strict';
+// UI: menu principale e settings
+APP.ui = (function() {
+  'use strict';
+  var cfg = APP.config;
+  var curArena = APP.arena;
+  var curRenderer = APP.renderer;
+
+  function openNav() { document.getElementById('mySidenav').style.width = '400px'; }
+  function closeNav() { document.getElementById('mySidenav').style.width = '0'; }
+
+  function setDifficulty(value) { cfg.game.mode = value; }
+  function setRowsNumber(value) { cfg.arena.numOfRows = parseInt(value, 10); }
+  function setColumnsNumber(value) { cfg.arena.numOfColumns = parseInt(value, 10); }
+
+  function playGame() {
+    closeNav();
+    document.getElementById('mainArea').style.display = 'none';
+    document.getElementById('legend').style.display = 'block';
+    document.getElementById('score').style.display = 'block';
+
+    if (!curRenderer.isInitialized()) {
+      curRenderer.init(function() {
+        curArena.build();
+        curRenderer.start();
+      });
+    } else {
+      curArena.build();
+      curRenderer.start();
+    }
+  }
+
+  function init() {
+    window.playGame = playGame;
+    window.openNav = openNav;
+    window.closeNav = closeNav;
+    window.setDifficulty = setDifficulty;
+    window.setRowsNumber = setRowsNumber;
+    window.setColumnsNumber = setColumnsNumber;
+    window.launchBall = function() { APP.game.launchBall(); };
+  }
+
+  return { init: init, playGame: playGame, openNav: openNav, closeNav: closeNav };
+})();
