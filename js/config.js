@@ -46,8 +46,6 @@
       cz: 5.0,
       elevation: -45.0,
       angle: 0.0,
-      moveSpeed: 0.25,
-      rotateSpeed: 2.0,
       minElevation: -89.0,
       maxElevation: -1.0
     },

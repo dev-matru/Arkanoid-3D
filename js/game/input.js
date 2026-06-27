@@ -1,5 +1,5 @@
 'use strict';
-// Gestione input utente (mouse, tastiera, wheel)
+// Gestione input utente (mouse, tastiera semplificata)
 APP.input = (function() {
   'use strict';
   var cfg = APP.config;
@@ -30,20 +30,11 @@ APP.input = (function() {
       }
     }, {passive: false});
 
-    // Keyboard → camera
+    // Keyboard → camera preset (1-5) + debug info
     window.addEventListener('keydown', function(e) {
-      var cam = cfg.camera;
-      switch(e.keyCode) {
-        case 38: cam.elevation += cam.rotateSpeed; break;
-        case 40: cam.elevation -= cam.rotateSpeed; break;
-        case 37: cam.angle -= cam.rotateSpeed; break;
-        case 39: cam.angle += cam.rotateSpeed; break;
-        case 81: cam.cy -= cam.moveSpeed; break;
-        case 69: cam.cy += cam.moveSpeed; break;
-        case 65: cam.cx -= cam.moveSpeed; break;
-        case 68: cam.cx += cam.moveSpeed; break;
-        case 87: cam.cz -= cam.moveSpeed; break;
-        case 83: cam.cz += cam.moveSpeed; break;
+      var key = e.keyCode;
+      if (key >= 49 && key <= 53) { // tasti 1-5
+        APP.camera.setPreset(key - 48);
       }
     });
   }
