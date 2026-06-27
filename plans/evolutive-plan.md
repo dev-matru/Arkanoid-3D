@@ -1,57 +1,62 @@
 # Piano Evolutivo — Arkanoid 3D
 
 > **Data:** 2026-06-28
-> **Versione:** 3.0.0
+> **Versione:** 3.0.0 — ✅ COMPLETATO
 > **Obiettivo:** Settings persistenti, fisica realistica, camera cinematica
 
 ---
 
-## 1. Settings Persistenti (localStorage)
+## Riepilogo Implementazione
 
-**Stato attuale:** `APP.config` contiene tutti i settings ma non sono persistiti.
-Ogni page reload azzera ai default di `config.js`.
+| # | Descrizione | Stato | Commit | Moduli |
+|---|-------------|-------|--------|--------|
+| 1 | localStorage persistence | ✅ | `615bd7b` | `core/storage.js`, `menu.js`, `input.js` |
+| 2 | Fixed timestep + deltaTime | ✅ | `3372d7d` | `game/physics.js`, `state.js`, `renderer.js` |
+| 3 | Paddle bounce realistico (hit position) | ✅ | `3372d7d` | `game/physics.js` |
+| 4 | Sub-stepping anti-tunneling | ✅ | `3372d7d` | `game/physics.js` |
+| 5 | Progressive speed + paddle velocity transfer | ✅ | `3372d7d` | `game/physics.js` |
+| 6 | Camera orbitale automatica | ✅ | `a9b4f7a` | `render/camera.js` |
+| 7 | Preset views 1-5 | ✅ | `a9b4f7a` | `render/camera.js`, `input.js` |
+| 8 | Dynamic follow + screen shake | ✅ | `a9b4f7a` | `render/camera.js`, `physics.js` |
 
-**Implementazione:**
-- Nuovo modulo `js/core/storage.js`: incapsula lettura/scrittura localStorage
-- Chiavi da persistere: `gameMode`, `numOfRows`, `numOfColumns`, `fieldOfView`
-- Hook in `menu.js`: ogni setter chiama `APP.storage.save()` dopo aver modificato il config
-- Hook in `config.js`: dopo i default, chiama `APP.storage.load()` per sovrascrivere
+## Log Commit
 
-## 2. Physics Overhaul
+```
+a9b4f7a feat(3): camera cinematica con orbita automatica, preset, screen shake
+3372d7d feat(2.1): fisica con fixed timestep, deltaTime, sub-stepping
+615bd7b feat(1): settings persistenti via localStorage
+```
 
-**Problemi attuali:**
-- Movimento non framerate-independent (nessun deltaTime → scatti a fps variabili)
-- Rimbalzo semplicistico (sempre stesso angolo)
-- Nessuna influenza velocità paddle
-- Collisione discreta (tunneling a velocità alta)
-- Nessun sub-stepping
+## Dettaglio Implementazione
 
-**Implementazione:**
-1. Fixed timestep (1/120s) con accumulatore nel game loop
-2. Delta-time normalization per movimento frame-rate indipendent
-3. Hit-position sul paddle mappata ad angolo di uscita (-65° a +65°)
-4. Paddle velocity trasferita alla palla
-5. Sub-stepping per anti-tunneling
-6. Accelerazione progressiva della palla
+### 1. localStorage Persistence
 
-## 3. Camera Cinematica
+- **Modulo:** `js/core/storage.js`
+- **Chiavi persistite:** `gameMode`, `numOfRows`, `numOfColumns`, `fieldOfView`
+- **Salvataggio:** chiamato da ogni setter in `menu.js` + zoom rotellina in `input.js`
+- **Caricamento:** automatico all'inizializzazione (chiamata `load()` subito dopo la definizione del modulo)
 
-**Implementazione:**
-1. Rimozione controlli WASD/frecce
-2. Orbita automatica intorno al campo
-3. Preset camera 1-5 con transizioni smooth
-4. Dynamic Follow: camera segue la palla
-5. Screen shake su eventi
+### 2. Physics Overhaul
 
-## Ordine Implementazione
+- **Modulo:** `js/game/physics.js`
+- **Fixed timestep:** 1/120s con accumulator pattern nel `gameLoop` di `renderer.js`
+- **DeltaTime normalizzato:** movimento palla moltiplicato per `dt * 60` (normalizzato a 60fps)
+- **Hit position paddle:** da -1 (sinistra) a +1 (destra) → mappato ad angolo 205°-335°
+- **Paddle velocity transfer:** 50% della velocità orizzontale del paddle trasferito alla palla
+- **Sub-stepping:** movimento diviso in step di max 0.05 unità per anti-tunneling
+- **Accelerazione progressiva:** +1% per rimbalzo, capped a `maxBallSpeed: 0.5`
+- **Collisione:** AABB vs punto-centro con raggio, invece di 8 punti perimetrali
 
-| # | Descrizione | Moduli coinvolti |
-|---|-------------|------------------|
-| 1 | localStorage persistence | `js/core/storage.js` (nuovo), `js/config.js`, `js/ui/menu.js` |
-| 2 | Fixed timestep + deltaTime | `js/game/physics.js` (nuovo), `js/game/state.js`, `js/render/renderer.js` |
-| 3 | Paddle bounce realistico | `js/game/physics.js` |
-| 4 | Continuous collision | `js/game/physics.js` |
-| 5 | Progressive speed | `js/game/physics.js` |
-| 6 | Camera orbitale automatica | `js/render/camera.js`, `js/game/input.js` |
-| 7 | Preset views 1-5 | `js/render/camera.js`, `js/game/input.js` |
-| 8 | Dynamic follow + effetti | `js/render/camera.js`, `js/game/state.js` |
+### 3. Camera Cinematica
+
+- **Modulo:** `js/render/camera.js`
+- **Orbita automatica:** rotazione Y a 0.15°/frame
+- **5 preset camera (tasti 1-5):**
+  - [1] Orbit — orbita automatica attorno al centro arena
+  - [2] Top-Down — vista zenitale
+  - [3] Side View — vista laterale fissa
+  - [4] POV Paddle — segue il paddle da vicino
+  - [5] Dynamic Follow — segue la palla con anticipazione traiettoria
+- **Lerp smooth:** tutte le transizioni usano interpolazione lineare con fattore 0.03-0.06
+- **Screen shake:** tremolio su blocchi rotti (0.08), game over (0.5), vittoria (0.3)
+- **Controlli rimossi:** WASD/frecce sostituiti con tasti 1-5
