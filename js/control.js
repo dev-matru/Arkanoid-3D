@@ -118,8 +118,14 @@ function setPaddle(amount){
     paddle.x = amount;
 }
 
+var audioPool = {};
+
 function playSound(path, volume) {
-    var audio = new Audio(path);
+    if (!audioPool[path]) {
+        audioPool[path] = new Audio(path);
+    }
+    // Clone per permettere overlap dello stesso suono
+    var audio = audioPool[path].cloneNode();
     audio.volume = volume;
     audio.play();
 }
