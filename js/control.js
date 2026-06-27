@@ -86,7 +86,8 @@ function doMouseMove(event) {
 
 function doMouseWheel(event) {
 
-    amount = event.wheelDelta / 100.0;
+    event.preventDefault();
+    var amount = event.deltaY / 100.0;
 
     if(perspective.fieldOfViewDeg - amount < 180 && perspective.fieldOfViewDeg - amount > 0)
     perspective.fieldOfViewDeg -= amount;
