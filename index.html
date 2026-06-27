@@ -14,37 +14,59 @@
 
   <div id="mySidenav" class="sidenav">
     <a href="javascript:void(0)" class="closebtn" onclick="closeNav()">&times;</a>
-    <a>
-      <h3>Difficulty</h3>
-      <form>
-        <input type="radio" name="light" onchange="setDifficulty(this.value);" value="easy" checked>Easy<br/>
-        <input type="radio" name="light" onchange="setDifficulty(this.value);" value="medium">Medium<br/>
-        <input type="radio" name="light" onchange="setDifficulty(this.value);" value="hard">Hard<br/>
+    
+    <div class="settings-section">
+      <h3 class="settings-title">&#9733; Difficulty</h3>
+      <div class="settings-divider"></div>
+      <form class="difficulty-form">
+        <label class="radio-label">
+          <input type="radio" name="difficulty" onchange="setDifficulty(this.value);" value="easy" checked>
+          <span class="radio-custom"></span>
+          <span class="radio-text easy">Easy</span>
+        </label>
+        <label class="radio-label">
+          <input type="radio" name="difficulty" onchange="setDifficulty(this.value);" value="medium">
+          <span class="radio-custom"></span>
+          <span class="radio-text medium">Medium</span>
+        </label>
+        <label class="radio-label">
+          <input type="radio" name="difficulty" onchange="setDifficulty(this.value);" value="hard">
+          <span class="radio-custom"></span>
+          <span class="radio-text hard">Hard</span>
+        </label>
       </form>
-    </a>
-    <a>
-      <h3>Blocks</h3>
-      Number of rows:    
-      <select name="rows" id="rowsSelect" onchange="setRowsNumber(this.value)">
-        <option value="2">2</option>
-        <option value="3">3</option>
-        <option value="4">4</option>
-        <option value="5" selected>5</option>
-        <option value="6">6</option>
-        <option value="7">7</option>
-        <option value="8">8</option>
-      </select>
-      Number of columns:
-      <select name="columns" id="columnsSelect" onchange="setColumnsNumber(this.value)">
-        <option value="4">4</option>
-        <option value="5">5</option>
-        <option value="6">6</option>
-        <option value="7">7</option>
-        <option value="8" selected>8</option>
-        <option value="9">9</option>
-        <option value="10">10</option>
-      </select>
-    </a>
+    </div>
+
+    <div class="settings-section">
+      <h3 class="settings-title">&#9733; Blocks</h3>
+      <div class="settings-divider"></div>
+      <div class="select-group">
+        <div class="select-field">
+          <label class="select-label" for="rowsSelect">Rows</label>
+          <select name="rows" id="rowsSelect" onchange="setRowsNumber(this.value)">
+            <option value="2">2</option>
+            <option value="3">3</option>
+            <option value="4">4</option>
+            <option value="5" selected>5</option>
+            <option value="6">6</option>
+            <option value="7">7</option>
+            <option value="8">8</option>
+          </select>
+        </div>
+        <div class="select-field">
+          <label class="select-label" for="columnsSelect">Columns</label>
+          <select name="columns" id="columnsSelect" onchange="setColumnsNumber(this.value)">
+            <option value="4">4</option>
+            <option value="5">5</option>
+            <option value="6">6</option>
+            <option value="7">7</option>
+            <option value="8" selected>8</option>
+            <option value="9">9</option>
+            <option value="10">10</option>
+          </select>
+        </div>
+      </div>
+    </div>
   </div> 
   
   <div>
