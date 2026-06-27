@@ -172,8 +172,8 @@ APP.renderer = (function() {
     gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-    var viewMatrix = math.MakeView(cfg.camera.cx, cfg.camera.cy, cfg.camera.cz,
-                                    cfg.camera.elevation, cfg.camera.angle);
+    // Use camera module (includes orbital, shake, lerp)
+    var viewMatrix = APP.camera.getViewMatrix();
     cfg.rendering.aspect = gl.canvas.clientWidth / gl.canvas.clientHeight;
     var perspectiveMatrix = math.MakePerspective(
       cfg.rendering.fieldOfViewDeg, cfg.rendering.aspect,
@@ -225,6 +225,15 @@ APP.renderer = (function() {
     while (accumulator >= FIXED_DT) {
       curGame.update(FIXED_DT);
       accumulator -= FIXED_DT;
+    }
+
+    // Camera cinematic update (ogni frame, non fixed)
+    APP.camera.update(deltaTime);
+
+    // Update camera HUD
+    var cameraDisplay = document.getElementById('cameraPreset');
+    if (cameraDisplay) {
+      cameraDisplay.textContent = '[' + APP.camera.getCurrentPreset() + '] ' + APP.camera.getPresetName();
     }
 
     updateObjectMatrices();

@@ -130,6 +130,7 @@ APP.physics = (function() {
           if (!blocks[i].broken && checkBallVsAABB(ball, blocks[i])) {
             resolveWallBounce(ball, blocks[i]);
             blocks[i].broken = true;
+            APP.camera.triggerShake(0.08);
             playSound('assets/break.wav', 0.2);
             addScore();
             return;
@@ -163,11 +164,13 @@ APP.physics = (function() {
     // Game over / Victory
     if (ball && ball.y < -3) {
       cfg.game.status = 'end';
+      APP.camera.triggerShake(0.5);
       playSound('assets/death.wav', 0.2);
       document.getElementById('result').innerText = 'GAME OVER';
     }
     if (cfg.game.score >= cfg.game.maxScore) {
       cfg.game.status = 'end';
+      APP.camera.triggerShake(0.3);
       playSound('assets/win.wav', 0.2);
       document.getElementById('result').innerText = 'VICTORY';
     }
