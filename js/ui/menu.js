@@ -44,6 +44,28 @@ APP.ui = (function() {
     window.setRowsNumber = setRowsNumber;
     window.setColumnsNumber = setColumnsNumber;
     window.launchBall = function() { APP.game.launchBall(); };
+
+    // Sincronizza UI settings con i valori caricati da localStorage
+    syncUiWithConfig();
+  }
+
+  function syncUiWithConfig() {
+    // Difficulty radio button
+    var diffRadios = document.getElementsByName('difficulty');
+    for (var i = 0; i < diffRadios.length; i++) {
+      if (diffRadios[i].value === cfg.game.mode) {
+        diffRadios[i].checked = true;
+        break;
+      }
+    }
+
+    // Rows select
+    var rowsSelect = document.getElementById('rowsSelect');
+    if (rowsSelect) rowsSelect.value = String(cfg.arena.numOfRows);
+
+    // Columns select
+    var colsSelect = document.getElementById('columnsSelect');
+    if (colsSelect) colsSelect.value = String(cfg.arena.numOfColumns);
   }
 
   return { init: init, playGame: playGame, openNav: openNav, closeNav: closeNav };
