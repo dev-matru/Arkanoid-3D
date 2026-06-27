@@ -25,12 +25,15 @@ div {
   position:absolute;
 }
 
+/* ===== SCORE & RESULT ===== */
+
 #score {
   color: rgb(255, 0, 255);
   font-size:x-large;
   bottom: 5%;
   left: 5%;
   display: none;
+  text-shadow: 0 0 10px rgba(255, 0, 255, 0.5);
 }
 
 #result {
@@ -40,6 +43,7 @@ div {
   width: 100%;
   text-align: center;
   position: absolute;
+  text-shadow: 0 0 20px rgba(255, 0, 255, 0.8), 0 0 40px rgba(255, 0, 255, 0.4);
 }
 
 #legend {
@@ -60,6 +64,8 @@ div {
   display: inline;
 }
 
+/* ===== MAIN MENU ===== */
+
 #mainArea {
   width: 100%;
   min-height: 100%;
@@ -76,21 +82,34 @@ div {
     margin-bottom: 5%;
     right: 40%;
     width: 40%;
+    image-rendering: auto;
+    filter: drop-shadow(0 0 20px rgba(255, 0, 255, 0.3));
 }
 
 .button{
   width: 600px;
-  background-color: #43455c;
-  border-radius: 25px;
-  box-shadow: 0 1px 20px 0 rgba(0,0,0,0.2);
+  background: linear-gradient(135deg, rgba(67, 69, 92, 0.9) 0%, rgba(40, 42, 60, 0.9) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.05);
   cursor: pointer;
-  margin: 30px auto 30px auto;
-  padding: 20px;
-  padding-left: 30px;
-  padding-right: 30px;
+  margin: 25px auto 25px auto;
+  padding: 20px 30px;
   text-align: center;
   position: relative;
   font-weight: 400;
+  transition: all 0.3s ease;
+}
+
+.button:hover {
+  background: linear-gradient(135deg, rgba(90, 92, 120, 0.95) 0%, rgba(60, 62, 85, 0.95) 100%);
+  border-color: rgba(255, 0, 255, 0.3);
+  box-shadow: 0 4px 30px rgba(255, 0, 255, 0.15), 0 0 20px rgba(255, 0, 255, 0.05);
+  transform: translateY(-2px);
+}
+
+.button:active {
+  transform: translateY(0px);
 }
 
 .button img{
@@ -99,41 +118,269 @@ div {
   right: 20px;
   width: 40px;
   margin-top: 5px;
+  opacity: 0.7;
+  transition: opacity 0.3s ease;
 }
 
-#table{  
-  position: absolute;
-  margin-top: 20%;
-  margin-left: 80%;
-} 
+.button:hover img {
+  opacity: 1.0;
+}
+
+.button h1 {
+  font-size: 24px;
+  letter-spacing: 4px;
+  text-transform: uppercase;
+  margin: 0;
+  color: #e0d0ff;
+  text-shadow: 0 0 10px rgba(128, 0, 255, 0.3);
+}
+
+/* ===== SIDENAV SETTINGS ===== */
 
 .sidenav {
-
   height: 100%;
   width: 0;
   position: fixed;
   z-index: 2;
   top: 0;
   left: 0;
-  background-color: rgba(10, 0, 20, 0.75);
+  background: linear-gradient(135deg, rgba(10, 0, 20, 0.92) 0%, rgba(20, 5, 40, 0.95) 100%);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
   overflow-x: hidden;
-  padding-top: 60px;
-  transition: 0.5s;
-}
-
-.sidenav a {
-  padding: 8px 8px 8px 32px;
-  text-decoration: none;
-  font-size: 25px;
-  color: #818181;
-  display: block;
-  transition: 0.3s;
+  padding-top: 0;
+  transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  border-right: 1px solid rgba(255, 0, 255, 0.15);
+  box-shadow: 5px 0 30px rgba(0, 0, 0, 0.5), 0 0 40px rgba(255, 0, 255, 0.05);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 .sidenav .closebtn {
   position: absolute;
-  top: 0;
-  right: 25px;
+  top: 15px;
+  right: 20px;
   font-size: 36px;
-  margin-left: 50px;
+  color: #ff00ff;
+  text-decoration: none;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: all 0.3s ease;
+  background: rgba(255, 0, 255, 0.05);
+  border: 1px solid rgba(255, 0, 255, 0.1);
+  padding: 0;
+  cursor: pointer;
+}
+
+.sidenav .closebtn:hover {
+  background: rgba(255, 0, 255, 0.15);
+  border-color: rgba(255, 0, 255, 0.4);
+  transform: rotate(90deg);
+  box-shadow: 0 0 20px rgba(255, 0, 255, 0.2);
+}
+
+/* ---- Settings Section ---- */
+
+.settings-section {
+  width: 320px;
+  margin: 30px auto;
+  padding: 25px 30px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 12px;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
+}
+
+.settings-section:first-of-type {
+  margin-top: 70px;
+}
+
+.settings-title {
+  color: #cc88ff;
+  font-size: 18px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  margin: 0 0 10px 0;
+  text-shadow: 0 0 15px rgba(128, 0, 255, 0.3);
+}
+
+.settings-divider {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255, 0, 255, 0.3), transparent);
+  margin-bottom: 18px;
+}
+
+/* ---- Radio Buttons ---- */
+
+.difficulty-form {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.radio-label {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  padding: 8px 12px;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+.radio-label:hover {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.radio-label input[type="radio"] {
+  display: none;
+}
+
+.radio-custom {
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  border-radius: 50%;
+  position: relative;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.radio-custom::after {
+  content: '';
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #ff00ff;
+  transform: scale(0);
+  transition: transform 0.2s ease;
+  box-shadow: 0 0 8px rgba(255, 0, 255, 0.5);
+}
+
+.radio-label input[type="radio"]:checked + .radio-custom {
+  border-color: #ff00ff;
+}
+
+.radio-label input[type="radio"]:checked + .radio-custom::after {
+  transform: scale(1);
+}
+
+.radio-text {
+  font-size: 16px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  transition: all 0.2s ease;
+}
+
+.radio-text.easy {
+  color: rgba(0, 255, 170, 0.7);
+}
+
+.radio-label input[type="radio"]:checked ~ .radio-text.easy {
+  color: #00ffaa;
+  text-shadow: 0 0 10px rgba(0, 255, 170, 0.4);
+}
+
+.radio-text.medium {
+  color: rgba(255, 200, 0, 0.7);
+}
+
+.radio-label input[type="radio"]:checked ~ .radio-text.medium {
+  color: #ffc800;
+  text-shadow: 0 0 10px rgba(255, 200, 0, 0.4);
+}
+
+.radio-text.hard {
+  color: rgba(255, 50, 50, 0.7);
+}
+
+.radio-label input[type="radio"]:checked ~ .radio-text.hard {
+  color: #ff3333;
+  text-shadow: 0 0 10px rgba(255, 50, 50, 0.4);
+}
+
+/* ---- Select Dropdowns ---- */
+
+.select-group {
+  display: flex;
+  gap: 15px;
+}
+
+.select-field {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.select-label {
+  color: rgba(200, 150, 255, 0.7);
+  font-size: 12px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+
+.select-field select {
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  color: #e0d0ff;
+  font-family: 'Roboto Mono', monospace;
+  font-size: 15px;
+  padding: 10px 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  outline: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23ff00ff' stroke-width='1.5' fill='none'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  padding-right: 35px;
+}
+
+.select-field select:hover {
+  border-color: rgba(255, 0, 255, 0.3);
+  background-color: rgba(0, 0, 0, 0.4);
+}
+
+.select-field select:focus {
+  border-color: rgba(255, 0, 255, 0.5);
+  box-shadow: 0 0 15px rgba(255, 0, 255, 0.1);
+}
+
+.select-field select option {
+  background: #1a0a2e;
+  color: #e0d0ff;
+  padding: 8px;
+}
+
+/* ---- Sidebar header pseudo-element ---- */
+
+.sidenav::before {
+  content: '⚙ SETTINGS';
+  display: block;
+  position: absolute;
+  top: 20px;
+  left: 32px;
+  font-size: 14px;
+  letter-spacing: 4px;
+  color: rgba(255, 0, 255, 0.3);
+  text-shadow: 0 0 10px rgba(255, 0, 255, 0.1);
+}
+
+#table{  
+  position: absolute;
+  margin-top: 20%;
+  margin-left: 80%;
 }
