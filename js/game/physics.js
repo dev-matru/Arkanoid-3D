@@ -1,5 +1,9 @@
 'use strict';
 // Fisica: movimento palla, collisioni, rimbalzi con delta-time e sub-stepping
+//
+// SISTEMA ANGOLI: 0°=destra, 90°=SU, 180°=sinistra, 270°=giu
+// NOTA: ball.y aumenta VERSO L'ALTO (top wall a y=10), diminuisce VERSO IL BASSO (paddle a y=-0.25)
+//
 APP.physics = (function() {
   'use strict';
   var cfg = APP.config;
@@ -30,25 +34,29 @@ APP.physics = (function() {
     var hitPos = (ball.x - paddle.x) / (paddle.width / 2);
     hitPos = Math.max(-1, Math.min(1, hitPos));
 
-    // Velocità paddle per trasferimento orizzontale
+    // Velocita paddle per trasferimento orizzontale
     var paddleVel = paddle.x - prevPaddleX;
 
-    // Sistema angoli: 0°=destra, 90°=giù, 180°=sinistra, 270°=su
-    // 270° ± hitPos*maxAngle → da 205° a 335° (su-destra a su-sinistra)
-    var maxAngle = cfg.physics.paddleHitMaxAngle;
-    var newAngle = 270 - hitPos * maxAngle;
+    // ANGOLO DI USCITA: la palla deve andare VERSO L'ALTO (y crescente)
+    // Centro paddle (hitPos=0) → 90° (dritto su)
+    // Bordo sinistro (hitPos=-1) → 90+65=155° (su-sinistra)
+    // Bordo destro (hitPos=+1) → 90-65=25° (su-destra)
+    var maxAngle = cfg.physics.paddleHitMaxAngle; // 65
+    var newAngle = 90 + hitPos * maxAngle;
     newAngle = ((newAngle % 360) + 360) % 360;
 
-    // Sposta palla SOPRA il paddle per evitare re-collisione
-    ball.y = paddle.y - paddle.height / 2 - ball.radius - 0.01;
+    // Sposta palla SOPRA il paddle (y del paddle + offset verso l'alto)
+    // paddle.y = -0.25, paddle.height/2 = 0.125, ball.radius = 0.2
+    // ball.y = -0.25 + 0.125 + 0.2 + 0.01 = 0.085 (sopra il paddle) ✓
+    ball.y = paddle.y + paddle.height / 2 + ball.radius + 0.01;
 
-    // Trasferimento velocità paddle
+    // Applica angolo + trasferimento velocita paddle
     var rad = math.degToRad(newAngle);
     var vx = ball.speed * Math.cos(rad);
     var vy = ball.speed * Math.sin(rad);
     vx += paddleVel * cfg.physics.paddleVelocityTransfer;
 
-    // Ricalcola speed dalla nuova direzione
+    // Ricalcola speed e angolo
     var newSpeed = Math.sqrt(vx * vx + vy * vy);
     ball.speed = Math.min(newSpeed, cfg.physics.maxBallSpeed);
     ball.angle = Math.atan2(vy, vx) * 180 / Math.PI;
@@ -60,38 +68,44 @@ APP.physics = (function() {
     playSound('assets/bounce.wav', 0.2);
   }
 
-  // ---- WALL / BLOCK BOUNCE (semplice riflessione assiale + push) ----
+  // ---- WALL / BLOCK BOUNCE (riflessione assiale + push) ----
   function resolveWallBounce(ball, object) {
-    // Determina quale lato è stato colpito in base alla posizione relativa
+    // Determina quale faccia e stata colpita confrontando gli overlap
     var overlapX = (ball.x - object.x) / (object.width / 2 + ball.radius);
     var overlapY = (ball.y - object.y) / (object.height / 2 + ball.radius);
 
     if (Math.abs(overlapX) > Math.abs(overlapY)) {
-      // Rimbalzo verticale (sinistra/destra)
+      // Rimbalzo VERTICALE (faccia sinistra o destra dell'oggetto)
       ball.angle = 180 - ball.angle;
-      // Push ball fuori dal lato colpito
-      if (ball.x < object.x) ball.x = object.x - object.width / 2 - ball.radius - 0.01;
-      else ball.x = object.x + object.width / 2 + ball.radius + 0.01;
+      // Push: se ball e a sinistra del centro → push a sinistra, altrimenti a destra
+      if (ball.x < object.x)
+        ball.x = object.x - object.width / 2 - ball.radius - 0.01;
+      else
+        ball.x = object.x + object.width / 2 + ball.radius + 0.01;
     } else {
-      // Rimbalzo orizzontale (sopra/sotto)
+      // Rimbalzo ORIZZONTALE (faccia sopra o sotto dell'oggetto)
       ball.angle = 360 - ball.angle;
-      // Push ball fuori dal lato colpito
-      if (ball.y < object.y) ball.y = object.y - object.height / 2 - ball.radius - 0.01;
-      else ball.y = object.y + object.height / 2 + ball.radius + 0.01;
+      // Push: se ball e sotto il centro → push in giu, altrimenti in su
+      if (ball.y < object.y)
+        ball.y = object.y - object.height / 2 - ball.radius - 0.01;
+      else
+        ball.y = object.y + object.height / 2 + ball.radius + 0.01;
     }
     ball.angle = ((ball.angle % 360) + 360) % 360;
   }
 
-  // ---- PUNTO vs AABB con raggio ----
+  // ---- CONTROLLO COLLISIONE: cerchio (palla) vs AABB ----
   function checkBallVsAABB(ball, obj) {
-    var closestX = Math.max(obj.x - obj.width / 2, Math.min(ball.x, obj.x + obj.width / 2));
-    var closestY = Math.max(obj.y - obj.height / 2, Math.min(ball.y, obj.y + obj.height / 2));
-    var distX = ball.x - closestX;
-    var distY = ball.y - closestY;
-    return (distX * distX + distY * distY) <= (ball.radius * ball.radius);
+    var halfW = obj.width / 2;
+    var halfH = obj.height / 2;
+    var closestX = Math.max(obj.x - halfW, Math.min(ball.x, obj.x + halfW));
+    var closestY = Math.max(obj.y - halfH, Math.min(ball.y, obj.y + halfH));
+    var dx = ball.x - closestX;
+    var dy = ball.y - closestY;
+    return (dx * dx + dy * dy) <= (ball.radius * ball.radius);
   }
 
-  // ---- BALL MOVEMENT (con sub-stepping + pre-check) ----
+  // ---- MUOVI PALLA E RILEVA COLLISIONI ----
   function moveAndDetect(dt) {
     var ball = curArena.getBall();
     if (!ball) return;
@@ -99,30 +113,24 @@ APP.physics = (function() {
     var speed = ball.speed;
     var rad = math.degToRad(ball.angle);
 
-    // Pre-check: collision at current position BEFORE moving
-    if (checkAllCollisions()) return;
-
-    // Distanza percorsa in questo frame (normalizzato a 60fps)
+    // Step movement normalizzato a 60fps
     var stepX = speed * Math.cos(rad) * dt * 60;
     var stepY = speed * Math.sin(rad) * dt * 60;
 
-    // Sub-stepping: dividi movimento se troppo lungo
+    // Sub-stepping: dividi in passi piccoli (max 0.05 unita)
     var dist = Math.sqrt(stepX * stepX + stepY * stepY);
-    var maxStep = 0.05; // più piccolo dell'oggetto più sottile (paddle half-height = 0.125)
-    var steps = Math.max(1, Math.ceil(dist / maxStep));
+    var steps = Math.max(1, Math.ceil(dist / 0.05));
     var subX = stepX / steps;
     var subY = stepY / steps;
 
     for (var s = 0; s < steps; s++) {
       ball.x += subX;
       ball.y += subY;
-
-      // Check collision dopo ogni sub-step
       if (checkAllCollisions()) return;
     }
   }
 
-  // ---- CHECK ALL COLLISIONS (condiviso tra pre-check e sub-step) ----
+  // ---- CHECK COLLISIONI CONTRO TUTTI GLI OGGETTI ----
   function checkAllCollisions() {
     var ball = curArena.getBall();
     if (!ball) return false;
@@ -130,13 +138,13 @@ APP.physics = (function() {
     var walls = curArena.getWalls();
     var blocks = curArena.getBlocks();
 
-    // Paddle
+    // 1. Paddle (prioritario)
     if (paddle && checkBallVsAABB(ball, paddle)) {
       resolvePaddleBounce(ball, paddle);
       return true;
     }
 
-    // Walls
+    // 2. Walls
     if (walls) {
       for (var key in walls) {
         if (walls.hasOwnProperty(key) && checkBallVsAABB(ball, walls[key])) {
@@ -146,7 +154,7 @@ APP.physics = (function() {
       }
     }
 
-    // Blocks
+    // 3. Blocks
     if (blocks) {
       for (var i = 0; i < blocks.length; i++) {
         if (!blocks[i].broken && checkBallVsAABB(ball, blocks[i])) {
@@ -178,13 +186,10 @@ APP.physics = (function() {
     }
     if (status !== 'play') return;
 
-    // Traccia posizione paddle per calcolo velocità
     if (paddle) prevPaddleX = paddle.x;
 
-    // Muovi palla e rileva collisioni (con sub-stepping)
     moveAndDetect(dt);
 
-    // Game over / Victory
     if (ball && ball.y < -3) {
       cfg.game.status = 'end';
       APP.camera.triggerShake(0.5);
