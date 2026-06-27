@@ -90,8 +90,11 @@ APP.camera = (function() {
     target.cy = targetY + preset.radius * Math.sin(phiRad);
     target.cz = targetZ + preset.radius * Math.cos(thetaRad) * Math.cos(phiRad);
 
-    // Elevazione = guarda verso il target
-    target.elevation = -(90 - preset.phi);
+    // Elevazione: -phi per guardare verso il target
+    // phi=45 → -45° (default 3/4 view)  ✓
+    // phi=85 → -85° (quasi top-down)     ✓
+    // phi=30 → -30° (leggera inclinazione) ✓
+    target.elevation = -preset.phi;
     // Angolo = opposto alla posizione rispetto al target
     target.angle = -theta;
 
