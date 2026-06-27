@@ -210,8 +210,23 @@ APP.renderer = (function() {
     }
   }
 
-  function gameLoop() {
-    curGame.update();
+  var lastTimestamp = 0;
+  var accumulator = 0;
+  var FIXED_DT = cfg.physics.fixedDt;
+
+  function gameLoop(timestamp) {
+    // Delta-time in secondi, clamp per tab-switch
+    var deltaTime = lastTimestamp ? (timestamp - lastTimestamp) / 1000 : FIXED_DT;
+    lastTimestamp = timestamp;
+    deltaTime = Math.min(deltaTime, 0.05); // max 50ms per frame
+
+    // Fixed timestep accumulator
+    accumulator += deltaTime;
+    while (accumulator >= FIXED_DT) {
+      curGame.update(FIXED_DT);
+      accumulator -= FIXED_DT;
+    }
+
     updateObjectMatrices();
     renderFrame();
     if (cfg.game.status !== 'end') animationId = requestAnimationFrame(gameLoop);
