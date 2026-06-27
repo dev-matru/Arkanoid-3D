@@ -25,6 +25,16 @@ div {
   position:absolute;
 }
 
+/* Reset position per elementi flex nel sidenav: normal flow */
+.sidenav .settings-section,
+.sidenav .settings-divider,
+.sidenav .difficulty-form,
+.sidenav .radio-label,
+.sidenav .select-group,
+.sidenav .select-field {
+  position: static;
+}
+
 /* ===== SCORE & RESULT ===== */
 
 #score {
