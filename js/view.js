@@ -178,7 +178,7 @@ function drawScene() {
       object.worldMatrix = utils.MakeWorldGeneric(paddle.x - arena.width/2, 0.0, -paddle.y, 0.0, 0.0, 0.0, paddle.width/2, ball.radius, paddle.height/2);
 
     if (object.type == "BALL")
-      object.worldMatrix = utils.MakeWorld(ball.x - arena.width/2 + arena.wallSize, 0.0, -ball.y, 0.0, 0.0, 0.0, 1.0);
+      object.worldMatrix = utils.MakeWorld(ball.x - arena.width/2, 0.0, -ball.y, 0.0, 0.0, 0.0, 1.0);
  
     viewWorld = utils.multiplyMatrices(viewMatrix, object.worldMatrix);
     projectionMatrix = utils.multiplyMatrices(perspectiveMatrix, viewWorld);

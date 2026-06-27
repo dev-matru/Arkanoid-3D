@@ -192,7 +192,7 @@ function iteration(){
 
     } else if (game.status == 'start') {
 
-        ball.x = paddle.x - arena.wallSize;
+        ball.x = paddle.x;
     } 
 }
 
