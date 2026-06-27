@@ -72,17 +72,14 @@ APP.camera = (function() {
     // Calcola theta: fisso per preset numerici, orbitale smooth per 'follow'
     var theta;
     if (preset.theta === 'follow' && ball) {
-      // Angolo raw verso la palla
-      var bx = ball.x - cfg.arena.width / 2;
-      var bz = -ball.y;
-      var rawTheta = Math.atan2(bx, bz) * 180 / Math.PI + 180;
+      // Orbita LEGGERA: mappa posizione palla a ±15° da theta base (30°)
+      // Ball a sinistra (bx_norm=-1) → theta=15°, ball a destra (+1) → theta=45°
+      var bx_norm = (ball.x - cfg.arena.width / 2) / (cfg.arena.width / 2);
+      bx_norm = Math.max(-1, Math.min(1, bx_norm)); // clamp
+      var targetTheta = 30 + bx_norm * 15;
 
-      // Difference angle, normalizzata a [-180, 180] per evitare il wrap-around
-      var diff = rawTheta - followTheta;
-      while (diff > 180) diff -= 360;
-      while (diff < -180) diff += 360;
-
-      // Lerp smooth sul theta tracking
+      // Tracking smooth
+      var diff = targetTheta - followTheta;
       followTheta += diff * followLerp;
       theta = followTheta;
     } else {
