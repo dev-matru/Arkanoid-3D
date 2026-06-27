@@ -8,7 +8,6 @@ APP.camera = (function() {
 
   // Stato camera
   var currentPreset = 1;
-  var autoTheta = 0;
 
   // Screen shake
   var shakeIntensity = 0;
@@ -22,13 +21,13 @@ APP.camera = (function() {
 
   // Preset camera con inquadrature ottimizzate
   var presets = {
-    1: { name: 'Default',       radius: 14, theta: 0,   phi: 45, targetMode: 'arena',  lerp: 0.06, autoOrbit: false },
-    2: { name: 'Top-Down',      radius: 18, theta: 0,   phi: 85, targetMode: 'arena',  lerp: 0.05, autoOrbit: false },
-    3: { name: 'Side View',     radius: 12, theta: 90,  phi: 35, targetMode: 'arena',  lerp: 0.05, autoOrbit: false },
-    4: { name: 'POV Paddle',    radius: 5,  theta: 0,   phi: 30, targetMode: 'paddle', lerp: 0.06, autoOrbit: false },
-    5: { name: 'Dynamic View',  radius: 12, theta: 'follow', phi: 35, targetMode: 'ball', lerp: 0.07, autoOrbit: false }
+    1: { name: 'Default',       radius: 14, theta: 0,   phi: 45, targetMode: 'arena',  lerp: 0.06 },
+    2: { name: 'Top-Down',      radius: 18, theta: 0,   phi: 85, targetMode: 'arena',  lerp: 0.05 },
+    3: { name: 'Side View',     radius: 12, theta: 90,  phi: 35, targetMode: 'arena',  lerp: 0.05 },
+    4: { name: 'POV Paddle',    radius: 5,  theta: 0,   phi: 30, targetMode: 'paddle', lerp: 0.06 },
+    5: { name: 'Dynamic View',  radius: 12, theta: 45,  phi: 35, targetMode: 'ball',   lerp: 0.07 }
   };
-  var orbitSpeed = 0.0;
+
 
   // ---- PRESET ----
   function setPreset(num) {
@@ -66,21 +65,8 @@ APP.camera = (function() {
       targetZ = -ball.y;
     }
 
-    // Angolo theta (orizzontale)
-    var theta;
-    if (preset.theta === 'auto') {
-      // Orbita automatica: ruota lentamente
-      autoTheta += orbitSpeed * dt * 60;
-      if (autoTheta > 360) autoTheta -= 360;
-      theta = autoTheta;
-    } else if (preset.theta === 'follow' && ball) {
-      // Segue la palla: calcola angolo verso la palla
-      var bx = ball.x - cfg.arena.width / 2;
-      var bz = -ball.y;
-      theta = Math.atan2(bx, bz) * 180 / Math.PI + 180;
-    } else {
-      theta = preset.theta;
-    }
+    // Angolo theta (orizzontale) — sempre dal preset
+    var theta = preset.theta;
 
     var thetaRad = Math.PI * theta / 180;
     var phiRad = Math.PI * preset.phi / 180;
