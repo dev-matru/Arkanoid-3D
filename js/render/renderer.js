@@ -34,15 +34,15 @@ APP.renderer = (function() {
     var cubeGeo = geom.createCube();
 
     sphereBufferInfo = twgl.createBufferInfoFromArrays(gl, {
-      inPosition: sphereGeo.vertices.flat(),
-      inNormal: sphereGeo.normals.flat(),
-      inUV: new Array(sphereGeo.vertices.length * 2).fill(0),
+      inPosition: { data: sphereGeo.vertices.flat(), numComponents: 3 },
+      inNormal: { data: sphereGeo.normals.flat(), numComponents: 3 },
+      inUV: { data: new Array(sphereGeo.vertices.length * 2).fill(0), numComponents: 2 },
       indices: sphereGeo.indices
     });
     cubeBufferInfo = twgl.createBufferInfoFromArrays(gl, {
-      inPosition: cubeGeo.vertices,
-      inNormal: cubeGeo.normals,
-      inUV: cubeGeo.uvs,
+      inPosition: { data: cubeGeo.vertices, numComponents: 3 },
+      inNormal: { data: cubeGeo.normals, numComponents: 3 },
+      inUV: { data: cubeGeo.uvs, numComponents: 2 },
       indices: cubeGeo.indices
     });
     sphereVao = twgl.createVAOFromBufferInfo(gl, programInfo, sphereBufferInfo);
