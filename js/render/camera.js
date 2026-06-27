@@ -25,8 +25,12 @@ APP.camera = (function() {
     2: { name: 'Top-Down',      radius: 18, theta: 0,   phi: 85, targetMode: 'arena',  lerp: 0.05 },
     3: { name: 'Side View',     radius: 12, theta: 90,  phi: 35, targetMode: 'arena',  lerp: 0.05 },
     4: { name: 'POV Paddle',    radius: 5,  theta: 0,   phi: 30, targetMode: 'paddle', lerp: 0.06 },
-    5: { name: 'Dynamic View',  radius: 12, theta: 45,  phi: 35, targetMode: 'ball',   lerp: 0.07 }
+    5: { name: 'Dynamic View',  radius: 12, theta: 'follow', phi: 35, targetMode: 'ball',   lerp: 0.07 }
   };
+
+  // Tracking angolo per Dynamic View (orbitale smooth)
+  var followTheta = 0;
+  var followLerp = 0.08;
 
 
   // ---- PRESET ----
@@ -65,8 +69,25 @@ APP.camera = (function() {
       targetZ = -ball.y;
     }
 
-    // Angolo theta (orizzontale) — sempre dal preset
-    var theta = preset.theta;
+    // Calcola theta: fisso per preset numerici, orbitale smooth per 'follow'
+    var theta;
+    if (preset.theta === 'follow' && ball) {
+      // Angolo raw verso la palla
+      var bx = ball.x - cfg.arena.width / 2;
+      var bz = -ball.y;
+      var rawTheta = Math.atan2(bx, bz) * 180 / Math.PI + 180;
+
+      // Difference angle, normalizzata a [-180, 180] per evitare il wrap-around
+      var diff = rawTheta - followTheta;
+      while (diff > 180) diff -= 360;
+      while (diff < -180) diff += 360;
+
+      // Lerp smooth sul theta tracking
+      followTheta += diff * followLerp;
+      theta = followTheta;
+    } else {
+      theta = preset.theta;
+    }
 
     var thetaRad = Math.PI * theta / 180;
     var phiRad = Math.PI * preset.phi / 180;
