@@ -39,8 +39,13 @@ APP.game = (function() {
   }
 
   function launchBall() {
-    if (cfg.game.status === 'end') restartGame();
-    else cfg.game.status = 'play';
+    if (cfg.game.status === 'end') {
+      restartGame();
+      // Restart the animation loop (stopped on game over)
+      APP.renderer.start();
+    } else {
+      cfg.game.status = 'play';
+    }
   }
 
   // ---- SCORE ----
