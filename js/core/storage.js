@@ -44,6 +44,7 @@ APP.storage = (function() {
         }
       }
       localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+      console.log('[STORAGE] salvato:', JSON.stringify(data));
     } catch (e) {
       // localStorage potrebbe non essere disponibile (es. Safari private mode)
       console.warn('Arkanoid 3D: cannot save settings', e);
@@ -54,8 +55,12 @@ APP.storage = (function() {
   function load() {
     try {
       var raw = localStorage.getItem(STORAGE_KEY);
-      if (!raw) return;
+      if (!raw) {
+        console.log('[STORAGE] nessun dato salvato, uso default');
+        return;
+      }
       var data = JSON.parse(raw);
+      console.log('[STORAGE] caricato:', raw);
       for (var key in KEYS) {
         if (KEYS.hasOwnProperty(key) && data[key] !== undefined) {
           var expectedType = KEYS[key].type;
