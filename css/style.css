@@ -397,3 +397,36 @@ div {
   margin-top: 20%;
   margin-left: 80%;
 }
+
+/* ---- Fullscreen Toggle ---- */
+
+.fullscreen-toggle {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 0, 255, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 3;
+  transition: all 0.3s ease;
+}
+
+.fullscreen-toggle:hover {
+  background: rgba(255, 0, 255, 0.1);
+  border-color: rgba(255, 0, 255, 0.3);
+  box-shadow: 0 0 15px rgba(255, 0, 255, 0.15);
+}
+
+.fullscreen-toggle svg {
+  transition: all 0.3s ease;
+}
+
+.fullscreen-toggle:hover svg {
+  stroke: rgba(255, 0, 255, 1);
+}
