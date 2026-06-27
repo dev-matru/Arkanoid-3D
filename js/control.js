@@ -1,3 +1,4 @@
+'use strict';
 var gameLoopId = null;
 var gameInitialized = false;
 

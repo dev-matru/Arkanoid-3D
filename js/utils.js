@@ -1,3 +1,4 @@
+'use strict';
 //Utils ver. 0.4
 //Includes minimal mat3 support
 //Includes texture operations
