@@ -39,6 +39,9 @@ APP.physics = (function() {
     var newAngle = 270 - hitPos * maxAngle;
     newAngle = ((newAngle % 360) + 360) % 360;
 
+    // Sposta palla SOPRA il paddle per evitare re-collisione
+    ball.y = paddle.y - paddle.height / 2 - ball.radius - 0.01;
+
     // Trasferimento velocità paddle
     var rad = math.degToRad(newAngle);
     var vx = ball.speed * Math.cos(rad);
@@ -57,7 +60,7 @@ APP.physics = (function() {
     playSound('assets/bounce.wav', 0.2);
   }
 
-  // ---- WALL / BLOCK BOUNCE (semplice riflessione assiale) ----
+  // ---- WALL / BLOCK BOUNCE (semplice riflessione assiale + push) ----
   function resolveWallBounce(ball, object) {
     // Determina quale lato è stato colpito in base alla posizione relativa
     var overlapX = (ball.x - object.x) / (object.width / 2 + ball.radius);
@@ -66,9 +69,15 @@ APP.physics = (function() {
     if (Math.abs(overlapX) > Math.abs(overlapY)) {
       // Rimbalzo verticale (sinistra/destra)
       ball.angle = 180 - ball.angle;
+      // Push ball fuori dal lato colpito
+      if (ball.x < object.x) ball.x = object.x - object.width / 2 - ball.radius - 0.01;
+      else ball.x = object.x + object.width / 2 + ball.radius + 0.01;
     } else {
       // Rimbalzo orizzontale (sopra/sotto)
       ball.angle = 360 - ball.angle;
+      // Push ball fuori dal lato colpito
+      if (ball.y < object.y) ball.y = object.y - object.height / 2 - ball.radius - 0.01;
+      else ball.y = object.y + object.height / 2 + ball.radius + 0.01;
     }
     ball.angle = ((ball.angle % 360) + 360) % 360;
   }
@@ -82,7 +91,7 @@ APP.physics = (function() {
     return (distX * distX + distY * distY) <= (ball.radius * ball.radius);
   }
 
-  // ---- BALL MOVEMENT (con sub-stepping) ----
+  // ---- BALL MOVEMENT (con sub-stepping + pre-check) ----
   function moveAndDetect(dt) {
     var ball = curArena.getBall();
     if (!ball) return;
@@ -90,54 +99,68 @@ APP.physics = (function() {
     var speed = ball.speed;
     var rad = math.degToRad(ball.angle);
 
+    // Pre-check: collision at current position BEFORE moving
+    if (checkAllCollisions()) return;
+
     // Distanza percorsa in questo frame (normalizzato a 60fps)
     var stepX = speed * Math.cos(rad) * dt * 60;
     var stepY = speed * Math.sin(rad) * dt * 60;
 
     // Sub-stepping: dividi movimento se troppo lungo
     var dist = Math.sqrt(stepX * stepX + stepY * stepY);
-    var steps = Math.max(1, Math.ceil(dist / (ball.radius * 0.8)));
+    var maxStep = 0.05; // più piccolo dell'oggetto più sottile (paddle half-height = 0.125)
+    var steps = Math.max(1, Math.ceil(dist / maxStep));
     var subX = stepX / steps;
     var subY = stepY / steps;
-
-    var paddle = curArena.getPaddle();
-    var walls = curArena.getWalls();
-    var blocks = curArena.getBlocks();
 
     for (var s = 0; s < steps; s++) {
       ball.x += subX;
       ball.y += subY;
 
-      // Paddle
-      if (paddle && checkBallVsAABB(ball, paddle)) {
-        resolvePaddleBounce(ball, paddle);
-        return;
-      }
+      // Check collision dopo ogni sub-step
+      if (checkAllCollisions()) return;
+    }
+  }
 
-      // Walls
-      if (walls) {
-        for (var key in walls) {
-          if (walls.hasOwnProperty(key) && checkBallVsAABB(ball, walls[key])) {
-            resolveWallBounce(ball, walls[key]);
-            return;
-          }
-        }
-      }
+  // ---- CHECK ALL COLLISIONS (condiviso tra pre-check e sub-step) ----
+  function checkAllCollisions() {
+    var ball = curArena.getBall();
+    if (!ball) return false;
+    var paddle = curArena.getPaddle();
+    var walls = curArena.getWalls();
+    var blocks = curArena.getBlocks();
 
-      // Blocks
-      if (blocks) {
-        for (var i = 0; i < blocks.length; i++) {
-          if (!blocks[i].broken && checkBallVsAABB(ball, blocks[i])) {
-            resolveWallBounce(ball, blocks[i]);
-            blocks[i].broken = true;
-            APP.camera.triggerShake(0.08);
-            playSound('assets/break.wav', 0.2);
-            addScore();
-            return;
-          }
+    // Paddle
+    if (paddle && checkBallVsAABB(ball, paddle)) {
+      resolvePaddleBounce(ball, paddle);
+      return true;
+    }
+
+    // Walls
+    if (walls) {
+      for (var key in walls) {
+        if (walls.hasOwnProperty(key) && checkBallVsAABB(ball, walls[key])) {
+          resolveWallBounce(ball, walls[key]);
+          return true;
         }
       }
     }
+
+    // Blocks
+    if (blocks) {
+      for (var i = 0; i < blocks.length; i++) {
+        if (!blocks[i].broken && checkBallVsAABB(ball, blocks[i])) {
+          resolveWallBounce(ball, blocks[i]);
+          blocks[i].broken = true;
+          APP.camera.triggerShake(0.08);
+          playSound('assets/break.wav', 0.2);
+          addScore();
+          return true;
+        }
+      }
+    }
+
+    return false;
   }
 
   // ---- MAIN UPDATE ----
