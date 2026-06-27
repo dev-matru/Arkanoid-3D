@@ -116,7 +116,7 @@ APP.game = (function() {
     }
     if (status !== 'play') return;
 
-    var paddle = curArena.getPaddle();
+    paddle = curArena.getPaddle();
     var walls = curArena.getWalls();
     var blocks = curArena.getBlocks();
 
