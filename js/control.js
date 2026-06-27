@@ -1,12 +1,20 @@
+var gameLoopId = null;
+var gameInitialized = false;
+
 function playGame() {
     
     closeNav();
     document.getElementById("mainArea").style.display = "none";
     document.getElementById("legend").style.display = "block";
     document.getElementById("score").style.display = "block";
-    buildArena();
-    main();
 
+    if (!gameInitialized) {
+        buildArena();
+        main();
+        gameInitialized = true;
+    } else {
+        restartGame();
+    }
 }
 
 function setDifficulty(value){
@@ -83,9 +91,7 @@ function doMouseWheel(event) {
     if(perspective.fieldOfViewDeg - amount < 180 && perspective.fieldOfViewDeg - amount > 0)
     perspective.fieldOfViewDeg -= amount;
 
-} 
-
-var gameLoopId = null;
+}
 
 function restartGame() {
     game.score = 0;
