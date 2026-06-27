@@ -24,7 +24,7 @@ APP.renderer = (function() {
     if (!gl) { document.write('WebGL 2.0 not supported'); return false; }
     shaders.resizeCanvasToDisplaySize(gl.canvas);
     gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
-    gl.clearColor(1.0, 1.0, 1.0, 1.0);
+    gl.clearColor(0.0, 0.0, 0.0, 0.0);
     gl.enable(gl.DEPTH_TEST);
     return true;
   }
