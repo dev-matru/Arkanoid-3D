@@ -194,7 +194,7 @@ function drawScene() {
     object.uniforms.matrix = utils.transposeMatrix(projectionMatrix);
     object.uniforms.nMatrix = utils.transposeMatrix(normalMatrix);
     object.uniforms.lightPosition = lightPositionTransformed;
-    object.uniforms.eyePosition = [camera.cx, camera.cy, camera.cz];
+    object.uniforms.eyePosition = [0.0, 0.0, 0.0];
     
     if (object.type == "ARENA")
       object.uniforms.textureWeight = 0.9;
