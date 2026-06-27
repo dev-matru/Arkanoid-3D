@@ -1,116 +1,173 @@
-# Arkanoid 3D — Refactored Edition
+# Arkanoid 3D
 
-> Un gioco Arkanoid 3D scritto interamente in vanilla WebGL 2.0, con zero build system.
+> A 3D Arkanoid/Breakout game written in **bare WebGL 2.0** — zero dependencies, zero build tools.
 
-![screenshot](https://user-images.githubusercontent.com/9197899/202512985-388f3bd0-6d26-41da-a029-2f285bf26638.png)
+<p align="center">
+  <img src="assets/logo.png" width="400" alt="Arkanoid 3D Logo">
+</p>
 
-## Filosofia
+Built entirely with vanilla JavaScript and WebGL 2.0, this game delivers a retro-futuristic vaporwave experience with real-time 3D rendering, dynamic lighting, and cinematic camera controls.
 
-- **Zero build system** — Nessun webpack, rollup, babel, npm. File statici servibili da qualsiasi HTTP server.
-- **Vanilla JavaScript** — Nessun framework UI (React, Vue, etc.). Solo DOM API native.
-- **WebGL diretto** — TWGL è l'unica libreria, usata solo per buffer/VAO management.
-- **ES5 compatibile** — Funziona su tutti i browser con WebGL 2.0.
-- **Self-contained** — Tutte le risorse sono locali (eccetto Google Fonts).
-- **Estetica vaporwave/retro —** Palette di colori saturi, effetto starfield, font monospace.
+---
 
-## Architettura
+## ✨ Features
 
-```
-Arkanoid-3D/
-├── index.html           # Entry point (modulare, nessun inline handler)
-├── Dockerfile           # Container Apache httpd:2.4
-├── README.md
-├── assets/              # Risorse statiche (audio, immagini, SVG)
-├── css/                 # Fogli di stile
-│   ├── font.css         # Roboto Mono (Google Fonts)
-│   ├── space.css        # Starfield CSS animato
-│   └── style.css        # UI principale
-├── shaders/             # Shader GLSL 300 es
-│   ├── vs.glsl          # Vertex shader
-│   └── fs.glsl          # Fragment shader (Phong + vaporwave)
-└── js/                  # 15 moduli organizzati gerarchicamente
-    ├── app.js           # Namespace radice APP
-    ├── config.js        # Costanti centralizzate
-    ├── vendor/
-    │   └── twgl.js      # TWGL (Gregg Tavares)
-    ├── core/
-    │   ├── math.js      # Algebra lineare 3D
-    │   ├── shaders.js   # Compilazione/linking shader
-    │   ├── texture.js   # Utility texture
-    │   ├── geometry.js  # Geometrie (sfera, cubo)
-    │   └── coordinates.js # Mapping 2D gioco → 3D mondo
-    ├── game/
-    │   ├── colors.js    # Palette colori randomizzata
-    │   ├── arena.js     # Costruzione arena
-    │   ├── state.js     # Game state machine, fisica, collisioni
-    │   └── input.js     # Input mouse/tastiera/wheel
-    ├── render/
-    │   ├── camera.js    # Camera orbitale
-    │   └── renderer.js  # WebGL init, scene, draw loop
-    └── ui/
-        └── menu.js      # Menu e settings panel
-```
+- **3D Vaporwave Aesthetic** — Point-light Phong shading with neon color palette and animated starfield
+- **Physics-Based Gameplay** — Sub-stepped collision detection, paddle hit-position angle control, progressive ball acceleration
+- **Cinematic Camera** — 5 preset views with smooth transitions, screen shake effects, dynamic ball tracking
+- **Persistent Settings** — Difficulty, grid size, and FOV saved to localStorage
+- **Zero Build System** — Open the HTML file in any browser with WebGL 2.0 support
+- **Docker Ready** — Deploy as a static HTTP server
 
-## Come eseguire
+---
 
-Servire la directory tramite qualsiasi HTTP server:
+## 🎮 Controls
+
+| Input | Action |
+|---|---|
+| 🖱️ **Mouse move** | Move paddle |
+| 🖱️ **Left click** | Launch ball / Restart on game over |
+| 🔄 **Scroll wheel** | Zoom in / out (Field of View) |
+| **1 – 5** | Switch camera preset view |
+
+### Camera Presets
+
+| Key | View | Description |
+|---|---|---|
+| `1` | **Default** | Classic top-down 45° view (original camera) |
+| `2` | **Top-Down** | Almost overhead, full arena overview |
+| `3` | **Side View** | Cinematic side angle |
+| `4` | **POV Paddle** | Close-up behind the paddle |
+| `5` | **Dynamic** | Camera follows the ball with trajectory anticipation |
+
+---
+
+## 🚀 Quick Start
+
+### Option A: Python HTTP Server
 
 ```bash
-# Python 3
 python3 -m http.server 8080
 ```
 
+Open `http://localhost:8080` in your browser.
+
+### Option B: Docker
+
 ```bash
-# Docker (produzione)
 docker build -t arkanoid-3d .
 docker run -p 8080:80 arkanoid-3d
 ```
 
-## Comandi
+### Option C: Any Static Server
 
-| Input | Azione |
+Simply serve the project directory with any HTTP server (Apache, Nginx, XAMPP, etc.).
+
+> ⚠️ **Note:** Opening `index.html` directly via `file://` protocol will not work — WebGL shader loading requires an HTTP server.
+
+---
+
+## 📁 Project Structure
+
+```
+Arkanoid-3D/
+├── index.html              # Entry point
+├── Dockerfile              # Apache httpd container
+├── assets/                 # Audio, images, SVG icons
+├── css/
+│   ├── style.css           # Main stylesheet
+│   ├── space.css           # CSS animated starfield
+│   └── font.css            # Roboto Mono font
+├── shaders/
+│   ├── vs.glsl             # Vertex shader (GLSL 300 es)
+│   └── fs.glsl             # Fragment shader (Phong + vaporwave)
+├── js/
+│   ├── app.js              # Root namespace (APP)
+│   ├── config.js           # Centralized game configuration
+│   ├── vendor/
+│   │   └── twgl.js         # TWGL — Tiny WebGL library
+│   ├── core/
+│   │   ├── math.js         # 3D linear algebra
+│   │   ├── shaders.js      # Shader compilation & linking
+│   │   ├── texture.js      # Texture utilities
+│   │   ├── geometry.js     # Sphere & cube mesh generators
+│   │   ├── coordinates.js  # 2D game → 3D world mapping
+│   │   └── storage.js      # localStorage persistence
+│   ├── game/
+│   │   ├── colors.js       # Randomized vaporwave palette
+│   │   ├── arena.js        # Arena builder (ball, paddle, walls, blocks)
+│   │   ├── state.js        # Game state machine
+│   │   ├── physics.js      # Physics engine (collisions, bounce, sub-stepping)
+│   │   └── input.js        # Mouse & keyboard input handling
+│   ├── render/
+│   │   ├── camera.js       # Cinematic camera (orbit, presets, shake)
+│   │   └── renderer.js     # WebGL renderer (init, scene, draw loop)
+│   └── ui/
+│       └── menu.js         # Main menu & settings panel
+└── plans/
+    ├── refactor-plan.md    # Initial codebase analysis & refactor plan
+    └── evolutive-plan.md   # Feature evolution plan (physics, camera, storage)
+```
+
+---
+
+## 🧱 Architecture Overview
+
+The application follows a **namespaced modular pattern** — all modules live under the single global `APP` object.
+
+```
+APP
+├── .config          ← Centralized constants & settings
+├── .math            ← 3D matrix/vector math
+├── .shaders         ← WebGL shader utilities
+├── .texture         ← Texture loading
+├── .geometry        ← Procedural mesh generation
+├── .coordinates     ← Coordinate system mapping
+├── .storage         ← localStorage persistence
+├── .colors          ← Palette management
+├── .arena           ← Game object factory
+├── .game            ← State machine (start / play / end)
+├── .physics         ← Physics engine
+├── .input           ← Mouse & keyboard handling
+├── .camera          ← Cinematic camera system
+├── .renderer        ← WebGL rendering pipeline
+└── .ui              ← DOM-based user interface
+```
+
+---
+
+## 🛠️ Development
+
+### Requirements
+
+- A modern browser with **WebGL 2.0** support
+- An HTTP server (Python, Docker, Apache, etc.)
+- No npm, no build step, no dependencies
+
+### Scripts
+
+All 16 JavaScript modules are loaded via `<script>` tags in `index.html`. Load order respects module dependencies.
+
+### Physics Engine
+
+The ball uses **circle vs AABB** collision detection with **sub-stepping** (max 0.05 units per step) to prevent tunneling. The paddle bounce angle is dynamically calculated based on where the ball hits:
+
+| Hit position | Bounce angle |
 |---|---|
-| Mouse move | Muovi paddle |
-| Click sinistro | Lancia palla / Riavvia partita |
-| Scroll | Zoom (FOV) |
-| ↑ ↓ | Rotazione camera verticale |
-| ← → | Rotazione camera orizzontale |
-| W A S D | Sposta camera (avanti/sinistra/indietro/destra) |
-| Q E | Sposta camera (giù/su) |
+| Left edge (−1) | ~155° (up-left) |
+| Center (0) | 90° (straight up) |
+| Right edge (+1) | ~25° (up-right) |
 
-## Grafo dipendenze moduli
+Paddle velocity is partially transferred to the ball, giving the player directional control.
 
-```
-app.js ← (nessuna)
-config.js ← app.js
-core/* ← config.js
-game/colors.js ← config.js
-game/arena.js ← config.js, core/math.js, game/colors.js
-game/state.js ← config.js, core/math.js, game/arena.js
-game/input.js ← config.js, game/arena.js, game/state.js
-render/camera.js ← config.js, core/math.js
-render/renderer.js ← config.js, core/math.js, core/geometry.js,
-                     core/shaders.js, game/arena.js, game/state.js,
-                     game/input.js, render/camera.js
-ui/menu.js ← config.js, game/arena.js, render/renderer.js
-```
+---
 
-## Bug Fix Applicati (refactor v2.0)
+## 📜 License
 
-| ID | Bug | Fix |
-|---|---|---|
-| B1 | HTML id duplicati (`id="blocks"` ×2) | ID univoci: `rowsSelect`, `columnsSelect` |
-| B2 | Offset X palla non allineato al paddle | Allineamento coordinate game→world |
-| B3 | `eyePosition` raw non trasformato | `[0,0,0]` (eye in camera space) |
-| B4 | `window.location.reload()` per restart | `restartGame()` pulito |
-| B5 | Chiamate multiple buildArena/main | Flag `initialized` + `cancelAnimationFrame` |
-| B6 | Attributo UV mancante nella sfera | UV dummy array per sphere VAO |
-| B7 | Parametri rx/ry invertiti in MakeWorld | Ordine corretto (rx→X, ry→Y) |
-| B8 | Collision epsilon fisso | Epsilon scalabile dal config |
-| B9 | Audio memory leak | Audio pool con cloneNode() |
-| B10 | Evento `mousewheel` deprecato | `wheel` + `preventDefault()` |
-| B17 | Blocchi distrutti renderizzati | Flag `visible` → skip draw call |
+MIT — feel free to use, modify, and share.
 
-## Licenza
+---
 
-MIT
+<p align="center">
+  <sub>Built with ❤️ and vanilla WebGL 2.0</sub>
+</p>
