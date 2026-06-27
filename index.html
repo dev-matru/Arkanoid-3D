@@ -7,6 +7,8 @@
   <link rel="stylesheet" href="css/font.css">
   <link rel="stylesheet" href="css/space.css">
   <link rel="stylesheet" href="css/style.css">
+  <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+  <link rel="alternate icon" href="assets/favicon.svg">
 </head>
 
 
@@ -89,6 +91,15 @@
       <h1>SETTINGS</h1>
     </div>
 
+    <div id="fullscreenBtn" class="fullscreen-toggle" onclick="toggleFullscreen();" title="Toggle Fullscreen">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="rgba(255,0,255,0.6)" stroke-width="2">
+        <path d="M8 3H5a2 2 0 0 0-2 2v3"/>
+        <path d="M21 8V5a2 2 0 0 0-2-2h-3"/>
+        <path d="M16 21h3a2 2 0 0 0 2-2v-3"/>
+        <path d="M3 16v3a2 2 0 0 0 2 2h3"/>
+      </svg>
+    </div>
+
   </div>
 
   <canvas id="scene"></canvas>
@@ -133,4 +144,15 @@
 window.onload = function() {
   APP.ui.init();
 };
+
+function toggleFullscreen() {
+  if (!document.fullscreenElement && !document.webkitFullscreenElement) {
+    var el = document.documentElement;
+    if (el.requestFullscreen) el.requestFullscreen();
+    else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
+  } else {
+    if (document.exitFullscreen) document.exitFullscreen();
+    else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
+  }
+}
 </script>
