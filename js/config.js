@@ -1,9 +1,8 @@
-'use strict';
 // Configurazione centralizzata di gioco
 (function() {
-  if (typeof APP === 'undefined') {
-    var APP = window.APP = {};
-  }
+  'use strict';
+
+  window.APP = window.APP || {};
 
   APP.config = {
     game: {
