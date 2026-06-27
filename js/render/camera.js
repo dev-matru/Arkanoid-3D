@@ -20,15 +20,15 @@ APP.camera = (function() {
   var target = { cx: cam.cx, cy: cam.cy, cz: cam.cz, elev: cam.elevation, angle: cam.angle };
   var lerpSpeed = 0.04;
 
-  // Preset camera
+  // Preset camera con inquadrature ottimizzate
   var presets = {
-    1: { name: 'Orbit',          radius: 12, theta: 'auto', phi: 45,  targetMode: 'arena',  lerp: 0.04 },
-    2: { name: 'Top-Down',       radius: 16, theta: 0,      phi: 80,  targetMode: 'arena',  lerp: 0.03 },
-    3: { name: 'Side View',      radius: 14, theta: 90,     phi: 20,  targetMode: 'arena',  lerp: 0.03 },
-    4: { name: 'POV Paddle',     radius: 6,  theta: 0,      phi: 25,  targetMode: 'paddle', lerp: 0.05 },
-    5: { name: 'Dynamic Follow', radius: 10, theta: 'auto', phi: 30,  targetMode: 'ball',   lerp: 0.06 }
+    1: { name: 'Default',       radius: 14, theta: 0,   phi: 45, targetMode: 'arena',  lerp: 0.06, autoOrbit: false },
+    2: { name: 'Top-Down',      radius: 18, theta: 0,   phi: 85, targetMode: 'arena',  lerp: 0.05, autoOrbit: false },
+    3: { name: 'Side View',     radius: 12, theta: 90,  phi: 35, targetMode: 'arena',  lerp: 0.05, autoOrbit: false },
+    4: { name: 'POV Paddle',    radius: 5,  theta: 0,   phi: 30, targetMode: 'paddle', lerp: 0.06, autoOrbit: false },
+    5: { name: 'Dynamic View',  radius: 12, theta: 'follow', phi: 35, targetMode: 'ball', lerp: 0.07, autoOrbit: false }
   };
-  var orbitSpeed = 0.15; // gradi per secondo
+  var orbitSpeed = 0.0;
 
   // ---- PRESET ----
   function setPreset(num) {
