@@ -24,7 +24,10 @@ APP.input = (function() {
       event.preventDefault();
       var amount = event.deltaY / 100.0;
       var newFov = cfg.rendering.fieldOfViewDeg - amount;
-      if (newFov < 180 && newFov > 0) cfg.rendering.fieldOfViewDeg = newFov;
+      if (newFov < 180 && newFov > 0) {
+        cfg.rendering.fieldOfViewDeg = newFov;
+        APP.storage.save();
+      }
     }, {passive: false});
 
     // Keyboard → camera
