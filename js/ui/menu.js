@@ -8,9 +8,18 @@ APP.ui = (function() {
   function openNav() { document.getElementById('mySidenav').style.width = '400px'; }
   function closeNav() { document.getElementById('mySidenav').style.width = '0'; }
 
-  function setDifficulty(value) { cfg.game.mode = value; }
-  function setRowsNumber(value) { cfg.arena.numOfRows = parseInt(value, 10); }
-  function setColumnsNumber(value) { cfg.arena.numOfColumns = parseInt(value, 10); }
+  function setDifficulty(value) {
+    cfg.game.mode = value;
+    APP.storage.save();
+  }
+  function setRowsNumber(value) {
+    cfg.arena.numOfRows = parseInt(value, 10);
+    APP.storage.save();
+  }
+  function setColumnsNumber(value) {
+    cfg.arena.numOfColumns = parseInt(value, 10);
+    APP.storage.save();
+  }
 
   function playGame() {
     closeNav();
