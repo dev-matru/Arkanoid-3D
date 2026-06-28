@@ -1,5 +1,5 @@
 // Centralized game configuration
-(function() {
+(function () {
   'use strict';
 
   window.APP = window.APP || {};
@@ -55,6 +55,8 @@
       zNear: 0.1,
       zFar: 100.0,
       fieldOfViewDeg: 60.0,
+      arenaTextureTileDensity: .5,
+      disableAssetCache: true,
       specularColor: [1.0, 1.0, 1.0],
       specularShine: 100.0
     },

@@ -1,5 +1,5 @@
 'use strict';
-// Utility texture WebGL — estratto da utils.js
+// Utility texture WebGL — extracted from utils.js
 APP.texture = (function() {
   'use strict';
 
@@ -19,8 +19,7 @@ APP.texture = (function() {
     image.onload = function(e) {
       var texture = context.createTexture();
       context.bindTexture(context.TEXTURE_2D, texture);
-      context.texImage2D(context.TEXTURE_2D, 0, context.RGBA, context.RGBA,
-        context.UNSIGNED_BYTE, image);
+      context.texImage2D(context.TEXTURE_2D, 0, context.RGBA, context.RGBA, context.UNSIGNED_BYTE, image);
       context.texParameteri(context.TEXTURE_2D, context.TEXTURE_WRAP_S, context.CLAMP_TO_EDGE);
       context.texParameteri(context.TEXTURE_2D, context.TEXTURE_WRAP_T, context.CLAMP_TO_EDGE);
       context.texParameteri(context.TEXTURE_2D, context.TEXTURE_MAG_FILTER, context.LINEAR);
