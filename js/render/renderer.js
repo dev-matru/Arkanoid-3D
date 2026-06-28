@@ -10,13 +10,21 @@ APP.renderer = (function() {
   var curGame = APP.game;
 
   var canvas, gl, programInfo;
-  var sphereVao, cubeVao;
-  var sphereBufferInfo, cubeBufferInfo;
+  var sphereVao;
+  var sphereBufferInfo;
+  var cubeMeshes = {};
   var sphereUniforms, cubeUniforms;
   var texture;
   var objectsToDraw = [];
   var animationId = null;
   var initialized = false;
+
+  function cacheBustUrl(url) {
+    if (!cfg.rendering.disableAssetCache) return url;
+
+    var separator = url.indexOf('?') === -1 ? '?' : '&';
+    return url + separator + 'v=' + Date.now();
+  }
 
   function webglSetup() {
     canvas = document.getElementById('scene');
@@ -31,7 +39,6 @@ APP.renderer = (function() {
 
   function createGeometries() {
     var sphereGeo = geom.createSphere(cfg.ball.radius, 30);
-    var cubeGeo = geom.createCube();
 
     sphereBufferInfo = twgl.createBufferInfoFromArrays(gl, {
       inPosition: { data: sphereGeo.vertices.flat(), numComponents: 3 },
@@ -39,23 +46,42 @@ APP.renderer = (function() {
       inUV: { data: new Array(sphereGeo.vertices.length * 2).fill(0), numComponents: 2 },
       indices: sphereGeo.indices
     });
-    cubeBufferInfo = twgl.createBufferInfoFromArrays(gl, {
+    sphereVao = twgl.createVAOFromBufferInfo(gl, programInfo, sphereBufferInfo);
+
+    createCubeMesh('solid');
+    createCubeMesh('wall', { uvMode: 'wall' });
+    createCubeMesh('floor', { uvMode: 'floor' });
+    createCubeMesh('cover', { uvMode: 'cover' });
+  }
+
+  function createCubeMesh(role, options) {
+    var cubeGeo = geom.createCube(options);
+    var bufferInfo = twgl.createBufferInfoFromArrays(gl, {
       inPosition: { data: cubeGeo.vertices, numComponents: 3 },
       inNormal: { data: cubeGeo.normals, numComponents: 3 },
       inUV: { data: cubeGeo.uvs, numComponents: 2 },
       indices: cubeGeo.indices
     });
-    sphereVao = twgl.createVAOFromBufferInfo(gl, programInfo, sphereBufferInfo);
-    cubeVao = twgl.createVAOFromBufferInfo(gl, programInfo, cubeBufferInfo);
+
+    cubeMeshes[role] = {
+      bufferInfo: bufferInfo,
+      vertexArray: twgl.createVAOFromBufferInfo(gl, programInfo, bufferInfo)
+    };
+  }
+
+  function cubeMesh(role) {
+    return cubeMeshes[role] || cubeMeshes.solid;
   }
 
   function createUniforms() {
     texture = twgl.createTexture(gl, {
       target: gl.TEXTURE_2D,
-      src: 'assets/grid.png',
+      src: cacheBustUrl('assets/grid.png'),
       flipY: true,
       mag: gl.LINEAR,
-      min: gl.LINEAR
+      min: gl.LINEAR_MIPMAP_LINEAR,
+      wrapS: gl.REPEAT,
+      wrapT: gl.REPEAT
     });
 
     var s = cfg.rendering;
@@ -69,6 +95,11 @@ APP.renderer = (function() {
       lightColor: l.lightColor,
       LTarget: l.LTarget,
       LDecay: l.LDecay,
+      uvScale: [1.0, 1.0],
+      uvOffset: [0.0, 0.0],
+      uvWorldScale: [1.0, 1.0, 1.0],
+      uvTileDensity: 1.0,
+      uvMappingMode: 0.0,
       uTime: 0,
       uVaporwaveColor: [0.15, 0.0, 0.3],
       uFillStrength: 0.12,
@@ -87,6 +118,11 @@ APP.renderer = (function() {
       lightColor: l.lightColor,
       LTarget: l.LTarget,
       LDecay: l.LDecay,
+      uvScale: [1.0, 1.0],
+      uvOffset: [0.0, 0.0],
+      uvWorldScale: [1.0, 1.0, 1.0],
+      uvTileDensity: 1.0,
+      uvMappingMode: 0.0,
       uTime: 0,
       uVaporwaveColor: [0.15, 0.0, 0.3],
       uFillStrength: 0.12,
@@ -104,6 +140,7 @@ APP.renderer = (function() {
     var paddle = curArena.getPaddle();
     var walls = curArena.getWalls();
     var blocks = curArena.getBlocks();
+    var solidMesh = cubeMesh('solid');
 
     objectsToDraw.push({
       type: 'BALL', cutType: 'sphere',
@@ -118,27 +155,47 @@ APP.renderer = (function() {
     );
     objectsToDraw.push({
       type: 'PADDLE', blockColor: cfg.paddle.color,
-      programInfo: programInfo, bufferInfo: cubeBufferInfo, vertexArray: cubeVao,
-      uniforms: Object.assign({}, cubeUniforms),
+      programInfo: programInfo, bufferInfo: solidMesh.bufferInfo, vertexArray: solidMesh.vertexArray,
+      uniforms: Object.assign({}, cubeUniforms, { uvScale: [1.8, 1.0] }),
       worldMatrix: pw
     });
 
     // WALLS
     var wallDefs = [
-      {type: 'ARENA', x: a.width/2, y: 0, z: -a.height/2, sx: walls.right.width/2, sy: 0.5, sz: walls.right.height/2 + walls.top.height/2 - 0.00001},
-      {type: 'COVER', x: a.width/2, y: 0.51, z: -a.height/2, sx: walls.right.width/2, sy: 0.01, sz: walls.right.height/2 + walls.top.height/2},
-      {type: 'ARENA', x: -a.width/2, y: 0, z: -a.height/2, sx: walls.left.width/2, sy: 0.5, sz: walls.left.height/2 + walls.top.height/2 - 0.00001},
-      {type: 'COVER', x: -a.width/2, y: 0.51, z: -a.height/2, sx: walls.left.width/2, sy: 0.01, sz: walls.left.height/2 + walls.top.height/2},
-      {type: 'ARENA', x: 0, y: 0, z: -a.height, sx: walls.top.width/2 + a.wallSize/2 - 0.00001, sy: 0.5, sz: walls.top.height/2},
-      {type: 'COVER', x: 0, y: 0.51, z: -a.height, sx: walls.top.width/2 - a.wallSize/2, sy: 0.01, sz: walls.top.height/2},
-      {type: 'ARENA', x: 0, y: -1.0, z: -a.height/2, sx: a.width/2 + walls.right.width/2, sy: 0.5, sz: a.height/2 + walls.top.height/2}
+      {type: 'ARENA', role: 'wall', x: a.width/2, y: 0, z: -a.height/2, sx: walls.right.width/2, sy: 0.5, sz: walls.right.height/2 + walls.top.height/2 - 0.00001},
+      {type: 'COVER', role: 'cover', x: a.width/2, y: 0.51, z: -a.height/2, sx: walls.right.width/2, sy: 0.01, sz: walls.right.height/2 + walls.top.height/2, uvOffset: [0.12, 0.08]},
+      {type: 'ARENA', role: 'wall', x: -a.width/2, y: 0, z: -a.height/2, sx: walls.left.width/2, sy: 0.5, sz: walls.left.height/2 + walls.top.height/2 - 0.00001},
+      {type: 'COVER', role: 'cover', x: -a.width/2, y: 0.51, z: -a.height/2, sx: walls.left.width/2, sy: 0.01, sz: walls.left.height/2 + walls.top.height/2, uvOffset: [0.12, 0.08]},
+      {type: 'ARENA', role: 'wall', x: 0, y: 0, z: -a.height, sx: walls.top.width/2 + a.wallSize/2 - 0.00001, sy: 0.5, sz: walls.top.height/2},
+      {type: 'COVER', role: 'cover', x: 0, y: 0.51, z: -a.height, sx: walls.top.width/2 - a.wallSize/2, sy: 0.01, sz: walls.top.height/2, uvOffset: [0.12, 0.08]},
+      {type: 'FLOOR', role: 'floor', x: 0, y: -1.0, z: -a.height/2, sx: a.width/2 + walls.right.width/2, sy: 0.5, sz: a.height/2 + walls.top.height/2}
     ];
     for (var d = 0; d < wallDefs.length; d++) {
       var w = wallDefs[d];
+      var mesh = cubeMesh(w.role);
+      var arenaUniforms = Object.assign({}, cubeUniforms, {
+        uvScale: w.uvScale || [1.0, 1.0],
+        uvOffset: w.uvOffset || [0.0, 0.0],
+        uvWorldScale: [w.sx, w.sy, w.sz],
+        uvTileDensity: cfg.rendering.arenaTextureTileDensity,
+        uvMappingMode: 1.0
+      });
+
+      if (w.type === 'FLOOR') {
+        arenaUniforms.mDiffColor = [0.04, 0.12, 0.16];
+        arenaUniforms.specularColor = [0.15, 0.45, 0.55];
+      } else if (w.type === 'COVER') {
+        arenaUniforms.mDiffColor = [0.32, 0.04, 0.42];
+        arenaUniforms.specularColor = [0.9, 0.2, 1.0];
+      } else {
+        arenaUniforms.mDiffColor = [0.10, 0.04, 0.18];
+        arenaUniforms.specularColor = [0.45, 0.12, 0.8];
+      }
+
       objectsToDraw.push({
         type: w.type,
-        programInfo: programInfo, bufferInfo: cubeBufferInfo, vertexArray: cubeVao,
-        uniforms: Object.assign({}, cubeUniforms),
+        programInfo: programInfo, bufferInfo: mesh.bufferInfo, vertexArray: mesh.vertexArray,
+        uniforms: arenaUniforms,
         worldMatrix: math.MakeWorldGeneric(w.x, w.y, w.z, 0,0,0, w.sx, w.sy, w.sz)
       });
     }
@@ -148,7 +205,7 @@ APP.renderer = (function() {
       var b = blocks[i];
       objectsToDraw.push({
         type: 'BLOCK', id: b.id, blockColor: b.color, visible: true,
-        programInfo: programInfo, bufferInfo: cubeBufferInfo, vertexArray: cubeVao,
+        programInfo: programInfo, bufferInfo: solidMesh.bufferInfo, vertexArray: solidMesh.vertexArray,
         uniforms: Object.assign({}, cubeUniforms),
         worldMatrix: math.MakeWorldGeneric(b.x - a.width/2, 0, -b.y, 0,0,0, b.width/2, cfg.ball.radius, b.height/2)
       });
@@ -216,15 +273,17 @@ APP.renderer = (function() {
       obj.uniforms.eyePosition = [0.0, 0.0, 0.0];
       obj.uniforms.uTime = elapsedTime;
 
-      if (obj.type === 'ARENA' || obj.type === 'COVER') {
-        obj.uniforms.textureWeight = 0.9;
-        obj.uniforms.uEmissiveColor = [0.3, 0.05, 0.5];
-        obj.uniforms.uEmissiveStrength = 0.3;
+      if (obj.type === 'ARENA' || obj.type === 'COVER' || obj.type === 'FLOOR') {
+        obj.uniforms.textureWeight = obj.type === 'FLOOR' ? 0.75 : 0.9;
+        obj.uniforms.uEmissiveColor = obj.type === 'FLOOR' ? [0.0, 0.35, 0.45] : [0.3, 0.05, 0.5];
+        obj.uniforms.uEmissiveStrength = obj.type === 'COVER' ? 0.45 : 0.25;
         obj.uniforms.uNeonGrid = 1.0;
-        obj.uniforms.uRimStrength = 0.4;
+        obj.uniforms.uRimStrength = obj.type === 'FLOOR' ? 0.18 : 0.4;
       } else {
+        obj.uniforms.textureWeight = 0.0;
         obj.uniforms.uEmissiveStrength = 0.0;
         obj.uniforms.uNeonGrid = 0.0;
+        obj.uniforms.uRimStrength = 0.25;
       }
       if (obj.type === 'BLOCK' || obj.type === 'PADDLE') {
         obj.uniforms.mDiffColor = obj.blockColor;
@@ -288,7 +347,10 @@ APP.renderer = (function() {
     console.log('Arkanoid 3D: loading shaders from', shaderDir);
     curGame.playSound('assets/song.mp3', 0.1);
     try {
-      shaders.loadFiles([shaderDir + 'vs.glsl', shaderDir + 'fs.glsl'], function(shaderText) {
+      shaders.loadFiles([
+        cacheBustUrl(shaderDir + 'vs.glsl'),
+        cacheBustUrl(shaderDir + 'fs.glsl')
+      ], function(shaderText) {
         console.log('Arkanoid 3D: shaders loaded, creating program...');
         programInfo = twgl.createProgramInfo(gl, [shaderText[0], shaderText[1]]);
         if (!programInfo) {

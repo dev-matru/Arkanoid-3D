@@ -36,7 +36,59 @@ APP.geometry = (function() {
     return { vertices: vertices, normals: normals, indices: indices };
   }
 
-  function createCube() {
+  function buildBoxUvs(options) {
+    if (!options || !options.uvMode) {
+      return [
+        // Use original UVs to pick one cell from the texture atlas
+        1,0, 1,1, 0.75,1, 0.75,0,
+        1,0, 1,1, 0.75,1, 0.75,0,
+        1,0, 1,1, 0.75,1, 0.75,0,
+        0,0.75, 1,0.75, 1,1, 0,1,
+        1,0, 1,1, 0,1, 0,0,
+        1,0, 1,1, 0,1, 0,0
+      ];
+    }
+
+    var faceUvs = {
+      standard: [0,0, 1,0, 1,1, 0,1],
+      rotate90: [1,0, 1,1, 0,1, 0,0],
+      strip: [0,0.15, 1,0.15, 1,0.85, 0,0.85]
+    };
+
+    if (options.uvMode === 'floor') {
+      return [].concat(
+        faceUvs.strip, faceUvs.strip,
+        faceUvs.strip, faceUvs.strip,
+        faceUvs.standard,
+        faceUvs.standard
+      );
+    }
+
+    if (options.uvMode === 'wall') {
+      return [].concat(
+        faceUvs.standard, faceUvs.standard,
+        faceUvs.rotate90, faceUvs.rotate90,
+        faceUvs.strip, faceUvs.strip
+      );
+    }
+
+    if (options.uvMode === 'cover') {
+      return [].concat(
+        faceUvs.strip, faceUvs.strip,
+        faceUvs.strip, faceUvs.strip,
+        faceUvs.standard,
+        faceUvs.standard
+      );
+    }
+
+    return [].concat(
+      faceUvs.standard, faceUvs.standard,
+      faceUvs.standard, faceUvs.standard,
+      faceUvs.standard, faceUvs.standard
+    );
+  }
+
+  function createCube(options) {
     var vertices = [
       -1.0,-1.0,1.0,   1.0,-1.0,1.0,   1.0,1.0,1.0,   -1.0,1.0,1.0,
       -1.0,-1.0,-1.0,  1.0,-1.0,-1.0,  1.0,1.0,-1.0,  -1.0,1.0,-1.0,
@@ -58,15 +110,7 @@ APP.geometry = (function() {
       8,9,10, 8,10,11, 12,13,14, 12,14,15,
       16,17,18, 16,18,19, 20,22,21, 20,23,22
     ];
-    var uvs = [
-      // Use original UVs to pick one cell from the texture atlas
-      1,0, 1,1, 0.75,1, 0.75,0,
-      1,0, 1,1, 0.75,1, 0.75,0,
-      1,0, 1,1, 0.75,1, 0.75,0,
-      0,0.75, 1,0.75, 1,1, 0,1,
-      1,0, 1,1, 0,1, 0,0,
-      1,0, 1,1, 0,1, 0,0
-    ];
+    var uvs = buildBoxUvs(options);
     return { vertices: vertices, normals: normals, indices: indices, uvs: uvs };
   }
 
