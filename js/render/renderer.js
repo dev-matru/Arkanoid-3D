@@ -246,7 +246,7 @@ APP.renderer = (function() {
   function createUniforms() {
     texture = twgl.createTexture(gl, {
       target: gl.TEXTURE_2D,
-      src: cacheBustUrl('assets/grid.png'),
+      src: cacheBustUrl('assets/textures/grid.png'),
       flipY: true,
       mag: gl.LINEAR,
       min: gl.LINEAR_MIPMAP_LINEAR,
@@ -587,7 +587,7 @@ APP.renderer = (function() {
     var baseDir = window.location.href.replace(page, '');
     var shaderDir = baseDir + 'shaders/';
     console.log('Arkanoid 3D: loading shaders from', shaderDir);
-    curGame.playSound('assets/song.mp3', 0.1);
+    curGame.playSound('assets/audio/song.mp3', 0.1);
     try {
       shaders.loadFiles([
         cacheBustUrl(shaderDir + 'vs.glsl'),

@@ -36,7 +36,7 @@ Arkanoid-3D/
 ├── index.html
 ├── Dockerfile
 ├── README.md
-├── assets/            (12 file: audio, immagini, SVG)
+├── assets/            (audio/, icons/, images/, textures/)
 ├── css/
 │   ├── font.css       # Roboto Mono Google Fonts
 │   ├── space.css      # Starfield animato CSS (~900 righe)
