@@ -59,13 +59,13 @@ APP.geometry = (function() {
       16,17,18, 16,18,19, 20,22,21, 20,23,22
     ];
     var uvs = [
-      // One full grid tile per face (0,0)-(1,1)
-      0,0, 1,0, 1,1, 0,1,
-      0,0, 1,0, 1,1, 0,1,
-      0,0, 1,0, 1,1, 0,1,
-      0,0, 1,0, 1,1, 0,1,
-      0,0, 1,0, 1,1, 0,1,
-      0,0, 1,0, 1,1, 0,1
+      // Use original UVs to pick one cell from the texture atlas
+      1,0, 1,1, 0.75,1, 0.75,0,
+      1,0, 1,1, 0.75,1, 0.75,0,
+      1,0, 1,1, 0.75,1, 0.75,0,
+      0,0.75, 1,0.75, 1,1, 0,1,
+      1,0, 1,1, 0,1, 0,0,
+      1,0, 1,1, 0,1, 0,0
     ];
     return { vertices: vertices, normals: normals, indices: indices, uvs: uvs };
   }
