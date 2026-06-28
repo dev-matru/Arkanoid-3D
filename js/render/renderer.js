@@ -70,9 +70,24 @@ APP.renderer = (function() {
     'uniform sampler2D sceneTexture;\n' +
     'uniform sampler2D bloomTexture;\n' +
     'uniform float bloomStrength;\n' +
+    'uniform float fxaaEnabled;\n' +
+    'uniform vec2 texelSize;\n' +
+    'uniform float fxaaStrength;\n' +
     'void main() {\n' +
     '  vec4 sceneSample = texture(sceneTexture, vUv);\n' +
     '  vec3 scene = sceneSample.rgb;\n' +
+    '  if (fxaaEnabled > 0.5) {\n' +
+    '    vec3 luma = vec3(0.299, 0.587, 0.114);\n' +
+    '    vec3 north = texture(sceneTexture, vUv + vec2(0.0, -1.0) * texelSize).rgb;\n' +
+    '    vec3 south = texture(sceneTexture, vUv + vec2(0.0,  1.0) * texelSize).rgb;\n' +
+    '    vec3 west = texture(sceneTexture, vUv + vec2(-1.0, 0.0) * texelSize).rgb;\n' +
+    '    vec3 east = texture(sceneTexture, vUv + vec2( 1.0, 0.0) * texelSize).rgb;\n' +
+    '    float centerLum = dot(scene, luma);\n' +
+    '    float edge = max(abs(centerLum - dot(north, luma)), abs(centerLum - dot(south, luma)));\n' +
+    '    edge = max(edge, max(abs(centerLum - dot(west, luma)), abs(centerLum - dot(east, luma))));\n' +
+    '    vec3 smoothed = scene * 0.5 + (north + south + west + east) * 0.125;\n' +
+    '    scene = mix(scene, smoothed, smoothstep(0.08, 0.32, edge) * fxaaStrength);\n' +
+    '  }\n' +
     '  vec3 bloom = texture(bloomTexture, vUv).rgb * bloomStrength;\n' +
     '  vec3 color = scene + bloom;\n' +
     '  outColor = vec4(clamp(color, 0.0, 1.0), sceneSample.a);\n' +
@@ -237,7 +252,10 @@ APP.renderer = (function() {
     drawFullscreen(compositeProgramInfo, null, gl.canvas.width, gl.canvas.height, {
       sceneTexture: sceneTarget.color,
       bloomTexture: bloomTargetA.color,
-      bloomStrength: cfg.rendering.bloomStrength
+      bloomStrength: cfg.rendering.bloomStrength,
+      fxaaEnabled: cfg.rendering.fxaaEnabled ? 1.0 : 0.0,
+      texelSize: [1 / gl.canvas.width, 1 / gl.canvas.height],
+      fxaaStrength: cfg.rendering.fxaaStrength
     });
 
     gl.enable(gl.DEPTH_TEST);
