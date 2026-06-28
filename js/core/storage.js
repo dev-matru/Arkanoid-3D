@@ -1,11 +1,11 @@
 'use strict';
-// Persistenza settings via localStorage
+// Settings persistence via localStorage
 APP.storage = (function() {
   'use strict';
 
   var STORAGE_KEY = 'arkanoid3d_settings';
 
-  // Chiavi da persistere (mapping config → localStorage)
+  // Keys to persist (config → localStorage mapping)
   var KEYS = {
     gameMode:     { path: ['game', 'mode'],                    type: 'string' },
     numOfRows:    { path: ['arena', 'numOfRows'],              type: 'number' },
@@ -13,7 +13,7 @@ APP.storage = (function() {
     fieldOfView:  { path: ['rendering', 'fieldOfViewDeg'],     type: 'number' }
   };
 
-  // Legge un valore annidato da APP.config dato un path array
+  // Read a nested value from APP.config given a path array
   function getConfigValue(pathArr) {
     var val = APP.config;
     for (var i = 0; i < pathArr.length; i++) {
@@ -23,7 +23,7 @@ APP.storage = (function() {
     return val;
   }
 
-  // Scrive un valore annidato in APP.config dato un path array
+  // Write a nested value into APP.config given a path array
   function setConfigValue(pathArr, value) {
     var obj = APP.config;
     for (var i = 0; i < pathArr.length - 1; i++) {
@@ -33,7 +33,7 @@ APP.storage = (function() {
     obj[pathArr[pathArr.length - 1]] = value;
   }
 
-  // Salva le impostazioni correnti in localStorage
+  // Save current settings to localStorage
   function save() {
     try {
       var data = {};
@@ -46,12 +46,12 @@ APP.storage = (function() {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
       console.log('[STORAGE] salvato:', JSON.stringify(data));
     } catch (e) {
-      // localStorage potrebbe non essere disponibile (es. Safari private mode)
+      // localStorage might be unavailable (e.g. Safari private mode)
       console.warn('Arkanoid 3D: cannot save settings', e);
     }
   }
 
-  // Carica le impostazioni da localStorage e le applica al config
+  // Load settings from localStorage and apply to config
   function load() {
     try {
       var raw = localStorage.getItem(STORAGE_KEY);
@@ -65,7 +65,7 @@ APP.storage = (function() {
         if (KEYS.hasOwnProperty(key) && data[key] !== undefined) {
           var expectedType = KEYS[key].type;
           var value = data[key];
-          // Type coercion per sicurezza
+          // Type coercion for safety
           if (expectedType === 'number') value = Number(value);
           else if (expectedType === 'string') value = String(value);
           setConfigValue(KEYS[key].path, value);
@@ -76,7 +76,7 @@ APP.storage = (function() {
     }
   }
 
-  // Reset ai default (rimuove da localStorage)
+  // Reset to defaults (removes from localStorage)
   function clear() {
     try {
       localStorage.removeItem(STORAGE_KEY);
@@ -90,5 +90,5 @@ APP.storage = (function() {
   };
 })();
 
-// Carica impostazioni salvate (sovrascrive i default di config.js)
+// Load saved settings (overrides config.js defaults)
 APP.storage.load();

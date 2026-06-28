@@ -1,12 +1,12 @@
 'use strict';
-// Camera 3D cinematica: orbita automatica, preset views, dynamic follow, screen shake
+// Cinematic 3D camera: orbit, preset views, dynamic follow, screen shake
 APP.camera = (function() {
   'use strict';
   var cfg = APP.config;
   var curArena = APP.arena;
   var cam = cfg.camera;
 
-  // Stato camera
+  // Camera state
   var currentPreset = 1;
 
   // Screen shake
@@ -15,11 +15,11 @@ APP.camera = (function() {
   var shakeOffsetX = 0;
   var shakeOffsetY = 0;
 
-  // Target dinamico per lerp
+  // Dynamic target for lerp
   var target = { cx: cam.cx, cy: cam.cy, cz: cam.cz, elev: cam.elevation, angle: cam.angle };
   var lerpSpeed = 0.04;
 
-  // Preset camera con inquadrature ottimizzate
+  // Camera presets with optimized framing
   var presets = {
     1: { name: 'Default',       radius: 14, theta: 0,   phi: 45, targetMode: 'arena',  lerp: 0.06 },
     2: { name: 'Top-Down',      radius: 18, theta: 0,   phi: 85, targetMode: 'arena',  lerp: 0.05 },
@@ -28,7 +28,7 @@ APP.camera = (function() {
     5: { name: 'Dynamic View',  radius: 12, theta: 'follow', phi: 35, targetMode: 'ball',   lerp: 0.07 }
   };
 
-  // Tracking angolo per Dynamic View (orbitale smooth)
+  // Angle tracking for Dynamic View (smooth orbital)
   var followTheta = 0;
   var followLerp = 0.08;
 
@@ -44,12 +44,12 @@ APP.camera = (function() {
   function getCurrentPreset() { return currentPreset; }
   function getPresetName() { return presets[currentPreset] ? presets[currentPreset].name : 'Unknown'; }
 
-  // ---- UPDATE (chiamato ogni frame) ----
+  // ---- UPDATE (called every frame) ----
   function update(dt) {
     var preset = presets[currentPreset];
     if (!preset) return;
 
-    // Calcola target center (cosa guardare)
+    // Calculate target center (what to look at)
     var targetX = 0, targetY = 0, targetZ = 0;
     var arena = curArena;
     var ball = arena.getBall();
@@ -69,16 +69,16 @@ APP.camera = (function() {
       targetZ = -ball.y;
     }
 
-    // Calcola theta: fisso per preset numerici, orbitale smooth per 'follow'
+    // Calculate theta: fixed for numeric presets, smooth orbital for 'follow'
     var theta;
     if (preset.theta === 'follow' && ball) {
-      // Orbita LEGGERA: theta base 0°, ±30° in base alla posizione della palla
-      // Ball al centro → theta=0° (centrata), ball ai bordi → ±30°
+      // LIGHT orbit: base theta 0°, ±30° based on ball position
+      // Ball at center → theta=0° (centered), ball at edges → ±30°
       var bx_norm = (ball.x - cfg.arena.width / 2) / (cfg.arena.width / 2);
       bx_norm = Math.max(-1, Math.min(1, bx_norm));
-      var targetTheta = bx_norm * 30;
+      var targetTheta = bx_norm * 15;
 
-      // Tracking smooth
+      // Smooth tracking
       var diff = targetTheta - followTheta;
       followTheta += diff * followLerp;
       theta = followTheta;
@@ -89,27 +89,27 @@ APP.camera = (function() {
     var thetaRad = Math.PI * theta / 180;
     var phiRad = Math.PI * preset.phi / 180;
 
-    // Calcola posizione target della camera (sferica → cartesiana)
+    // Compute camera target position (spherical → cartesian)
     target.cx = targetX + preset.radius * Math.sin(thetaRad) * Math.cos(phiRad);
     target.cy = targetY + preset.radius * Math.sin(phiRad);
     target.cz = targetZ + preset.radius * Math.cos(thetaRad) * Math.cos(phiRad);
 
-    // Elevazione: -phi per guardare verso il target
+    // Elevation: -phi to look toward target
     // phi=45 → -45° (default 3/4 view)  ✓
-    // phi=85 → -85° (quasi top-down)     ✓
-    // phi=30 → -30° (leggera inclinazione) ✓
+    // phi=85 → -85° (close to top-down)     ✓
+    // phi=30 → -30° (slight tilt) ✓
     target.elevation = -preset.phi;
-    // Angolo = opposto alla posizione rispetto al target
+    // Angle = opposite to position relative to target
     target.angle = -theta;
 
-    // Lerp smooth verso il target
+    // Smooth lerp toward target
     cam.cx += (target.cx - cam.cx) * lerpSpeed;
     cam.cy += (target.cy - cam.cy) * lerpSpeed;
     cam.cz += (target.cz - cam.cz) * lerpSpeed;
     cam.elevation += (target.elevation - cam.elevation) * lerpSpeed;
     cam.angle += (target.angle - cam.angle) * lerpSpeed;
 
-    // Screen shake (smorza gradualmente)
+    // Screen shake (gradual decay)
     if (shakeIntensity > 0.01) {
       shakeOffsetX = (Math.random() - 0.5) * shakeIntensity;
       shakeOffsetY = (Math.random() - 0.5) * shakeIntensity;
@@ -125,7 +125,7 @@ APP.camera = (function() {
     shakeIntensity = Math.max(shakeIntensity, intensity);
   }
 
-  // ---- GET VIEW MATRIX (con shake) ----
+  // ---- GET VIEW MATRIX (with shake) ----
   function getViewMatrix() {
     return APP.math.MakeView(
       cam.cx + shakeOffsetX,
