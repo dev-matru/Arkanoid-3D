@@ -10,14 +10,73 @@ APP.renderer = (function() {
   var curGame = APP.game;
 
   var canvas, gl, programInfo;
+  var brightProgramInfo, blurProgramInfo, compositeProgramInfo;
   var sphereVao;
   var sphereBufferInfo;
+  var fullscreenBufferInfo;
   var cubeMeshes = {};
   var sphereUniforms, cubeUniforms;
   var texture;
+  var sceneTarget = null;
+  var bloomTargetA = null;
+  var bloomTargetB = null;
+  var bloomSize = { width: 0, height: 0 };
   var objectsToDraw = [];
   var animationId = null;
   var initialized = false;
+
+  var fullscreenVs = '#version 300 es\n' +
+    'in vec2 position;\n' +
+    'out vec2 vUv;\n' +
+    'void main() {\n' +
+    '  vUv = position * 0.5 + 0.5;\n' +
+    '  gl_Position = vec4(position, 0.0, 1.0);\n' +
+    '}\n';
+
+  var brightFs = '#version 300 es\n' +
+    'precision mediump float;\n' +
+    'in vec2 vUv;\n' +
+    'out vec4 outColor;\n' +
+    'uniform sampler2D sceneTexture;\n' +
+    'uniform float threshold;\n' +
+    'void main() {\n' +
+    '  vec3 color = texture(sceneTexture, vUv).rgb;\n' +
+    '  float luma = max(max(color.r, color.g), color.b);\n' +
+    '  float chroma = luma - min(min(color.r, color.g), color.b);\n' +
+    '  float mask = smoothstep(threshold, threshold + 0.18, luma) * smoothstep(0.12, 0.34, chroma);\n' +
+    '  outColor = vec4(color * mask, 1.0);\n' +
+    '}\n';
+
+  var blurFs = '#version 300 es\n' +
+    'precision mediump float;\n' +
+    'in vec2 vUv;\n' +
+    'out vec4 outColor;\n' +
+    'uniform sampler2D image;\n' +
+    'uniform vec2 texelSize;\n' +
+    'uniform vec2 direction;\n' +
+    'void main() {\n' +
+    '  vec3 color = texture(image, vUv).rgb * 0.227027;\n' +
+    '  color += texture(image, vUv + direction * texelSize * 1.384615).rgb * 0.316216;\n' +
+    '  color += texture(image, vUv - direction * texelSize * 1.384615).rgb * 0.316216;\n' +
+    '  color += texture(image, vUv + direction * texelSize * 3.230769).rgb * 0.070270;\n' +
+    '  color += texture(image, vUv - direction * texelSize * 3.230769).rgb * 0.070270;\n' +
+    '  outColor = vec4(color, 1.0);\n' +
+    '}\n';
+
+  var compositeFs = '#version 300 es\n' +
+    'precision mediump float;\n' +
+    'in vec2 vUv;\n' +
+    'out vec4 outColor;\n' +
+    'uniform sampler2D sceneTexture;\n' +
+    'uniform sampler2D bloomTexture;\n' +
+    'uniform float bloomStrength;\n' +
+    'void main() {\n' +
+    '  vec4 sceneSample = texture(sceneTexture, vUv);\n' +
+    '  vec3 scene = sceneSample.rgb;\n' +
+    '  vec3 bloom = texture(bloomTexture, vUv).rgb * bloomStrength;\n' +
+    '  vec3 color = scene + bloom;\n' +
+    '  outColor = vec4(clamp(color, 0.0, 1.0), sceneSample.a);\n' +
+    '}\n';
 
   function cacheBustUrl(url) {
     if (!cfg.rendering.disableAssetCache) return url;
@@ -71,6 +130,117 @@ APP.renderer = (function() {
 
   function cubeMesh(role) {
     return cubeMeshes[role] || cubeMeshes.solid;
+  }
+
+  function neonColor(color) {
+    var minChannel = Math.min(color[0], color[1], color[2]);
+    var chroma = [
+      Math.max(0, color[0] - minChannel),
+      Math.max(0, color[1] - minChannel),
+      Math.max(0, color[2] - minChannel)
+    ];
+    var maxChannel = Math.max(chroma[0], chroma[1], chroma[2], 0.001);
+    return [
+      Math.min(1, chroma[0] / maxChannel),
+      Math.min(1, chroma[1] / maxChannel),
+      Math.min(1, chroma[2] / maxChannel)
+    ];
+  }
+
+  function createRenderTarget(width, height, withDepth) {
+    var color = gl.createTexture();
+    gl.bindTexture(gl.TEXTURE_2D, color);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, width, height, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+
+    var framebuffer = gl.createFramebuffer();
+    gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffer);
+    gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, color, 0);
+
+    var depth = null;
+    if (withDepth) {
+      depth = gl.createRenderbuffer();
+      gl.bindRenderbuffer(gl.RENDERBUFFER, depth);
+      gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_COMPONENT16, width, height);
+      gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, depth);
+    }
+
+    gl.bindTexture(gl.TEXTURE_2D, null);
+    gl.bindRenderbuffer(gl.RENDERBUFFER, null);
+    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+
+    return { framebuffer: framebuffer, color: color, depth: depth, width: width, height: height };
+  }
+
+  function deleteRenderTarget(target) {
+    if (!target) return;
+    if (target.depth) gl.deleteRenderbuffer(target.depth);
+    if (target.color) gl.deleteTexture(target.color);
+    if (target.framebuffer) gl.deleteFramebuffer(target.framebuffer);
+  }
+
+  function resizePostTargets() {
+    if (!cfg.rendering.bloomEnabled) return;
+
+    var width = gl.canvas.width;
+    var height = gl.canvas.height;
+    var bloomWidth = Math.max(1, Math.floor(width * cfg.rendering.bloomScale));
+    var bloomHeight = Math.max(1, Math.floor(height * cfg.rendering.bloomScale));
+
+    if (sceneTarget && sceneTarget.width === width && sceneTarget.height === height &&
+        bloomSize.width === bloomWidth && bloomSize.height === bloomHeight) {
+      return;
+    }
+
+    deleteRenderTarget(sceneTarget);
+    deleteRenderTarget(bloomTargetA);
+    deleteRenderTarget(bloomTargetB);
+
+    sceneTarget = createRenderTarget(width, height, true);
+    bloomTargetA = createRenderTarget(bloomWidth, bloomHeight, false);
+    bloomTargetB = createRenderTarget(bloomWidth, bloomHeight, false);
+    bloomSize.width = bloomWidth;
+    bloomSize.height = bloomHeight;
+  }
+
+  function drawFullscreen(program, target, width, height, uniforms) {
+    gl.bindFramebuffer(gl.FRAMEBUFFER, target ? target.framebuffer : null);
+    gl.viewport(0, 0, width, height);
+    gl.disable(gl.DEPTH_TEST);
+    gl.useProgram(program.program);
+    twgl.setBuffersAndAttributes(gl, program, fullscreenBufferInfo);
+    twgl.setUniforms(program, uniforms);
+    twgl.drawBufferInfo(gl, fullscreenBufferInfo);
+  }
+
+  function applyBloom() {
+    drawFullscreen(brightProgramInfo, bloomTargetA, bloomTargetA.width, bloomTargetA.height, {
+      sceneTexture: sceneTarget.color,
+      threshold: cfg.rendering.bloomThreshold
+    });
+
+    drawFullscreen(blurProgramInfo, bloomTargetB, bloomTargetB.width, bloomTargetB.height, {
+      image: bloomTargetA.color,
+      texelSize: [1 / bloomTargetA.width, 1 / bloomTargetA.height],
+      direction: [1.0, 0.0]
+    });
+
+    drawFullscreen(blurProgramInfo, bloomTargetA, bloomTargetA.width, bloomTargetA.height, {
+      image: bloomTargetB.color,
+      texelSize: [1 / bloomTargetB.width, 1 / bloomTargetB.height],
+      direction: [0.0, 1.0]
+    });
+
+    drawFullscreen(compositeProgramInfo, null, gl.canvas.width, gl.canvas.height, {
+      sceneTexture: sceneTarget.color,
+      bloomTexture: bloomTargetA.color,
+      bloomStrength: cfg.rendering.bloomStrength
+    });
+
+    gl.enable(gl.DEPTH_TEST);
   }
 
   function createUniforms() {
@@ -242,7 +412,15 @@ APP.renderer = (function() {
   }
 
   function renderFrame() {
+    if (cfg.rendering.bloomEnabled) resizePostTargets();
+
+    if (cfg.rendering.bloomEnabled && sceneTarget) {
+      gl.bindFramebuffer(gl.FRAMEBUFFER, sceneTarget.framebuffer);
+    } else {
+      gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+    }
     gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
+    gl.enable(gl.DEPTH_TEST);
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
     // Use camera module (includes orbital, shake, lerp)
@@ -253,46 +431,102 @@ APP.renderer = (function() {
       cfg.rendering.zNear, cfg.rendering.zFar
     );
 
-    for (var i = 0; i < objectsToDraw.length; i++) {
-      var obj = objectsToDraw[i];
-      if (obj.visible === false) continue;
+    function drawSceneObject(obj) {
+      if (obj.visible === false) return;
 
       var viewWorld = math.multiplyMatrices(viewMatrix, obj.worldMatrix);
       var projectionMatrix = math.multiplyMatrices(perspectiveMatrix, viewWorld);
       var normalMatrix = math.invertMatrix(math.transposeMatrix(viewWorld));
-      var lightPosTransformed = math.multiplyMatrix3Vector3(
-        math.sub3x3from4x4(viewMatrix), cfg.light.lightPosition
+      var lightPosView = math.multiplyMatrixVector(
+        viewMatrix,
+        [cfg.light.lightPosition[0], cfg.light.lightPosition[1], cfg.light.lightPosition[2], 1.0]
       );
 
       gl.useProgram(obj.programInfo.program);
       twgl.setBuffersAndAttributes(gl, obj.programInfo, obj.bufferInfo);
 
       obj.uniforms.matrix = math.transposeMatrix(projectionMatrix);
+      obj.uniforms.modelViewMatrix = math.transposeMatrix(viewWorld);
       obj.uniforms.nMatrix = math.transposeMatrix(normalMatrix);
-      obj.uniforms.lightPosition = lightPosTransformed;
+      obj.uniforms.lightPosition = [lightPosView[0], lightPosView[1], lightPosView[2]];
       obj.uniforms.eyePosition = [0.0, 0.0, 0.0];
       obj.uniforms.uTime = elapsedTime;
 
       if (obj.type === 'ARENA' || obj.type === 'COVER' || obj.type === 'FLOOR') {
-        obj.uniforms.textureWeight = obj.type === 'FLOOR' ? 0.75 : 0.9;
-        obj.uniforms.uEmissiveColor = obj.type === 'FLOOR' ? [0.0, 0.35, 0.45] : [0.3, 0.05, 0.5];
-        obj.uniforms.uEmissiveStrength = obj.type === 'COVER' ? 0.45 : 0.25;
+        obj.uniforms.textureWeight = obj.type === 'FLOOR' ? 0.42 : 0.58;
+        obj.uniforms.uVaporwaveColor = [0.05, 0.0, 0.11];
+        obj.uniforms.uEmissiveColor = [1.0, 0.0, 0.95];
+        obj.uniforms.uEmissiveStrength = obj.type === 'COVER' ? 0.21 : 0.135;
         obj.uniforms.uNeonGrid = 1.0;
-        obj.uniforms.uRimStrength = obj.type === 'FLOOR' ? 0.18 : 0.4;
+        obj.uniforms.uRimStrength = obj.type === 'FLOOR' ? 0.27 : 0.42;
+
+        if (obj.type === 'FLOOR') {
+          obj.uniforms.mDiffColor = [0.035, 0.008, 0.07];
+          obj.uniforms.specularColor = [0.22, 0.04, 0.28];
+        } else if (obj.type === 'COVER') {
+          obj.uniforms.mDiffColor = [0.08, 0.012, 0.10];
+          obj.uniforms.specularColor = [0.22, 0.04, 0.28];
+        } else {
+          obj.uniforms.mDiffColor = [0.045, 0.01, 0.075];
+          obj.uniforms.specularColor = [0.18, 0.035, 0.24];
+        }
       } else {
         obj.uniforms.textureWeight = 0.0;
-        obj.uniforms.uEmissiveStrength = 0.0;
         obj.uniforms.uNeonGrid = 0.0;
-        obj.uniforms.uRimStrength = 0.25;
+        obj.uniforms.uVaporwaveColor = [0.045, 0.0, 0.075];
+        obj.uniforms.uRimStrength = 0.16;
       }
-      if (obj.type === 'BLOCK' || obj.type === 'PADDLE') {
+      if (obj.type === 'BALL') {
+        obj.uniforms.mDiffColor = [0.95, 0.05, 1.0];
+        obj.uniforms.uEmissiveColor = [1.0, 0.0, 0.95];
+        obj.uniforms.uEmissiveStrength = 0.38;
+        obj.uniforms.uRimStrength = 0.5;
+      }
+      if (obj.type === 'BLOCK') {
+        var blockNeonColor = neonColor(obj.blockColor);
+        obj.uniforms.mDiffColor = [
+          obj.blockColor[0] * 0.16 + blockNeonColor[0] * 0.38,
+          obj.blockColor[1] * 0.16 + blockNeonColor[1] * 0.38,
+          obj.blockColor[2] * 0.16 + blockNeonColor[2] * 0.38
+        ];
+        obj.uniforms.uVaporwaveColor = [0.0, 0.0, 0.0];
+        obj.uniforms.uEmissiveColor = blockNeonColor;
+        obj.uniforms.uEmissiveStrength = 0.34;
+        obj.uniforms.uRimStrength = 0.24;
+        obj.uniforms.specularColor = [
+          blockNeonColor[0] * 0.06,
+          blockNeonColor[1] * 0.06,
+          blockNeonColor[2] * 0.06
+        ];
+      }
+      if (obj.type === 'PADDLE') {
         obj.uniforms.mDiffColor = obj.blockColor;
-        obj.uniforms.specularColor = obj.blockColor;
+        obj.uniforms.uEmissiveColor = obj.blockColor;
+        obj.uniforms.uEmissiveStrength = 0.0;
+        obj.uniforms.specularColor = [
+          obj.blockColor[0] * 0.35,
+          obj.blockColor[1] * 0.35,
+          obj.blockColor[2] * 0.35
+        ];
       }
 
       twgl.setUniforms(obj.programInfo, obj.uniforms);
       twgl.drawBufferInfo(gl, obj.bufferInfo);
     }
+
+    var ballObject = null;
+    for (var i = 0; i < objectsToDraw.length; i++) {
+      var obj = objectsToDraw[i];
+      if (obj.type === 'BALL') {
+        ballObject = obj;
+        continue;
+      }
+      drawSceneObject(obj);
+    }
+
+    if (ballObject) drawSceneObject(ballObject);
+
+    if (cfg.rendering.bloomEnabled && sceneTarget) applyBloom();
   }
 
   function updateCameraLegend() {
@@ -365,6 +599,15 @@ APP.renderer = (function() {
           console.error('Arkanoid 3D: failed to create program info');
           return;
         }
+        brightProgramInfo = twgl.createProgramInfo(gl, [fullscreenVs, brightFs]);
+        blurProgramInfo = twgl.createProgramInfo(gl, [fullscreenVs, blurFs]);
+        compositeProgramInfo = twgl.createProgramInfo(gl, [fullscreenVs, compositeFs]);
+        fullscreenBufferInfo = twgl.createBufferInfoFromArrays(gl, {
+          position: {
+            numComponents: 2,
+            data: [-1,-1, 1,-1, -1,1, -1,1, 1,-1, 1,1]
+          }
+        });
         createGeometries();
         createUniforms();
         APP.input.init(canvas, gl);

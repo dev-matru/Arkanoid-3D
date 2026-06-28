@@ -76,7 +76,7 @@ APP.camera = (function() {
       // Ball at center → theta=0° (centered), ball at edges → ±30°
       var bx_norm = (ball.x - cfg.arena.width / 2) / (cfg.arena.width / 2);
       bx_norm = Math.max(-1, Math.min(1, bx_norm));
-      var targetTheta = bx_norm * 15;
+      var targetTheta = bx_norm * 10;
 
       // Smooth tracking
       var diff = targetTheta - followTheta;
