@@ -491,8 +491,8 @@ APP.renderer = (function() {
         ];
         obj.uniforms.uVaporwaveColor = [0.0, 0.0, 0.0];
         obj.uniforms.uEmissiveColor = blockNeonColor;
-        obj.uniforms.uEmissiveStrength = 0.34;
-        obj.uniforms.uRimStrength = 0.24;
+        obj.uniforms.uEmissiveStrength = 0.3;
+        obj.uniforms.uRimStrength = 0.3;
         obj.uniforms.specularColor = [
           blockNeonColor[0] * 0.06,
           blockNeonColor[1] * 0.06,

@@ -55,20 +55,22 @@ APP.arena = (function() {
     };
 
     // BLOCKS
-    var w = a.width - a.wallSize;
+    var leftInnerEdge = a.wallSize / 2;
+    var rightInnerEdge = a.width - a.wallSize / 2;
+    var w = rightInnerEdge - leftInnerEdge;
     var h = a.height - a.wallSize / 2;
     var lastRowLimit = h * a.lastRowLimitRatio;
     var columnStep = w / a.numOfColumns;
     var rowStep = (h - lastRowLimit) / a.numOfRows;
-    var xOffset = columnStep / 2 + a.blocksSpacing * a.numOfColumns / 2;
+    var xOffset = leftInnerEdge + columnStep / 2;
     var id = 0;
 
     blocks = [];
-    for (var i = xOffset; i <= w; i += columnStep) {
-      for (var j = h - rowStep / 2; j >= lastRowLimit; j -= rowStep) {
+    for (var i = xOffset; i < rightInnerEdge; i += columnStep) {
+      for (var j = h - rowStep / 2, rowIndex = 0; j >= lastRowLimit; j -= rowStep, rowIndex++) {
         blocks.push({
           id: id,
-          color: colors.getColor(id),
+          color: colors.getRowColor(rowIndex),
           x: i,
           y: j,
           width: columnStep - a.blocksSpacing,
