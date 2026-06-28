@@ -42,7 +42,7 @@ APP.physics = (function() {
     // Left edge (hitPos=-1) → 90+65=155° (up-left)
     // Right edge (hitPos=+1) → 90-65=25° (up-right)
     var maxAngle = cfg.physics.paddleHitMaxAngle; // 65
-    var newAngle = 90 + hitPos * maxAngle;
+    var newAngle = 90 - hitPos * maxAngle;
     newAngle = ((newAngle % 360) + 360) % 360;
 
     // Move ball ABOVE the paddle (paddle y + offset upward)
@@ -186,8 +186,6 @@ APP.physics = (function() {
     }
     if (status !== 'play') return;
 
-    if (paddle) prevPaddleX = paddle.x;
-
     moveAndDetect(dt);
 
     if (ball && ball.y < -3) {
@@ -202,6 +200,8 @@ APP.physics = (function() {
       playSound('assets/win.wav', 0.2);
       document.getElementById('result').innerText = 'VICTORY';
     }
+
+    if (paddle) prevPaddleX = paddle.x;
   }
 
   function reset() {
