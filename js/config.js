@@ -57,6 +57,10 @@
       fieldOfViewDeg: 60.0,
       arenaTextureTileDensity: .5,
       disableAssetCache: true,
+      bloomEnabled: true,
+      bloomScale: 0.25,
+      bloomThreshold: 0.66,
+      bloomStrength: 0.82,
       specularColor: [1.0, 1.0, 1.0],
       specularShine: 100.0
     },

@@ -9,6 +9,7 @@ out vec3 fsNormal;
 out vec2 fsUV;
 
 uniform mat4 matrix; 
+uniform mat4 modelViewMatrix;
 uniform mat4 nMatrix;
 uniform vec2 uvScale;
 uniform vec2 uvOffset;
@@ -35,7 +36,7 @@ void main() {
   }
 
   fsUV = mappedUV * uvScale + uvOffset;
-  fsPosition = mat3(matrix) * inPosition;
+  fsPosition = (modelViewMatrix * vec4(inPosition, 1.0)).xyz;
   fsNormal = mat3(nMatrix) * inNormal; 
   
   gl_Position = matrix * vec4(inPosition, 1.0);

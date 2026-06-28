@@ -36,6 +36,10 @@ void main() {
   vec3 viewDir = normalize(eyePosition - fsPosition);
 
   vec3 textureColor = texture(diffuseTexture, fsUV).rgb;
+  float textureEnergy = max(max(textureColor.r, textureColor.g), textureColor.b);
+  if (uNeonGrid > 0.5) {
+    textureColor = mix(textureColor, vec3(textureEnergy) * uEmissiveColor, 0.82);
+  }
   vec3 baseColor = mDiffColor * (1.0 - textureWeight) + textureColor * textureWeight;
 
   // POINT LIGHT
@@ -56,11 +60,12 @@ void main() {
   float NdotFill = max(0.0, dot(nNormal, fillDir));
   vec3 fill = baseColor * uFillStrength * NdotFill;
 
-  // SPECULAR (Phong)
-  vec3 reflectDir = reflect(-lightDir, nNormal);
   float NdotV = max(0.0, dot(nNormal, viewDir));
-  float spec = pow(max(0.0, dot(reflectDir, viewDir)), specularShine);
-  vec3 specular = spec * specularColor;
+
+  // SPECULAR (Blinn-Phong, light-gated to avoid camera-driven reflections)
+  vec3 halfDir = normalize(lightDir + viewDir);
+  float spec = pow(max(0.0, dot(nNormal, halfDir)), specularShine) * NdotL;
+  vec3 specular = spec * specularColor * lightIntensity * 0.35;
 
   // RIM LIGHT — neon edge glow
   float rim = 1.0 - NdotV;
@@ -71,18 +76,15 @@ void main() {
   vec3 vaporwaveTint = uVaporwaveColor;
 
   // ---- EMISSIVE GLOW (neon from inside the object) ----
-  float pulse = sin(uTime * 0.6) * 0.3 + 0.7;
+  float pulse = sin(uTime * 0.7) * 0.2 + 0.9;
   vec3 emissive = uEmissiveColor * uEmissiveStrength * pulse;
 
-  // ---- NEON GRID PATTERN — basato sulla posizione, non UV ----
-  float neonGrid = 0.0;
+  // ---- NEON GRID PATTERN on floor/walls ----
+  vec3 neonGridColor = vec3(0.0);
   if (uNeonGrid > 0.5) {
-    // Griglia 1x1 per faccia usando fsPosition
-    float gridSize = 1.0;
-    vec2 gridPos = abs(fract(fsPosition.xz / gridSize) - 0.5);
-    float line = 1.0 - smoothstep(0.01, 0.06, min(gridPos.x, gridPos.y));
-    float pulse = sin(uTime * 0.7 + fsPosition.x * 2.0 + fsPosition.z * 1.5) * 0.35 + 0.65;
-    neonGrid = line * 0.35 * pulse;
+    float gridMask = smoothstep(0.35, 0.92, textureEnergy);
+    float gridPulse = sin(uTime * 0.45 + fsUV.x * 1.7 + fsUV.y * 1.3) * 0.18 + 0.82;
+    neonGridColor = uEmissiveColor * gridMask * 1.35 * gridPulse;
   }
 
   // FINAL COMPOSITE
@@ -91,7 +93,7 @@ void main() {
   finalColor += rimColor;
   finalColor += vaporwaveTint;
   finalColor += emissive;
-  finalColor += uVaporwaveColor * neonGrid;
+  finalColor += neonGridColor;
 
   outColor = vec4(clamp(finalColor, 0.0, 1.0).rgb, 1.0);
 }
