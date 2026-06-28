@@ -444,16 +444,32 @@ APP.renderer = (function() {
     // Use camera module (includes orbital, shake, lerp)
     var viewMatrix = APP.camera.getViewMatrix();
     cfg.rendering.aspect = gl.canvas.clientWidth / gl.canvas.clientHeight;
-    var perspectiveMatrix = math.MakePerspective(
-      cfg.rendering.fieldOfViewDeg, cfg.rendering.aspect,
-      cfg.rendering.zNear, cfg.rendering.zFar
-    );
+    var projectionMatrixBase;
+    if (APP.camera.getProjectionMode() === 'orthographic' && cfg.rendering.topDownOrthographic) {
+      var margin = cfg.rendering.topDownOrthoMargin;
+      var viewHeight = (cfg.arena.height + cfg.arena.wallSize * 2 + margin * 2) * cfg.rendering.topDownOrthoZoom;
+      var minWidth = cfg.arena.width + cfg.arena.wallSize * 2 + margin * 2;
+      if (viewHeight * cfg.rendering.aspect < minWidth) {
+        viewHeight = minWidth / cfg.rendering.aspect;
+      }
+      projectionMatrixBase = math.MakeOrthographic(
+        viewHeight * cfg.rendering.aspect,
+        viewHeight,
+        cfg.rendering.zNear,
+        cfg.rendering.zFar
+      );
+    } else {
+      projectionMatrixBase = math.MakePerspective(
+        cfg.rendering.fieldOfViewDeg, cfg.rendering.aspect,
+        cfg.rendering.zNear, cfg.rendering.zFar
+      );
+    }
 
     function drawSceneObject(obj) {
       if (obj.visible === false) return;
 
       var viewWorld = math.multiplyMatrices(viewMatrix, obj.worldMatrix);
-      var projectionMatrix = math.multiplyMatrices(perspectiveMatrix, viewWorld);
+      var projectionMatrix = math.multiplyMatrices(projectionMatrixBase, viewWorld);
       var normalMatrix = math.invertMatrix(math.transposeMatrix(viewWorld));
       var lightPosView = math.multiplyMatrixVector(
         viewMatrix,

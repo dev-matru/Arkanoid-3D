@@ -215,6 +215,15 @@ APP.math = (function() {
     return perspective;
   }
 
+  function MakeOrthographic(width, height, n, f) {
+    var orthographic = identityMatrix();
+    orthographic[0] = 2.0 / width;
+    orthographic[5] = 2.0 / height;
+    orthographic[10] = -2.0 / (f - n);
+    orthographic[11] = -(f + n) / (f - n);
+    return orthographic;
+  }
+
   return {
     degToRad: degToRad,
     identityMatrix: identityMatrix,
@@ -235,6 +244,7 @@ APP.math = (function() {
     MakeWorld: MakeWorld,
     MakeWorldGeneric: MakeWorldGeneric,
     MakeView: MakeView,
-    MakePerspective: MakePerspective
+    MakePerspective: MakePerspective,
+    MakeOrthographic: MakeOrthographic
   };
 })();

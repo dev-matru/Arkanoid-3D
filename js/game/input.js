@@ -7,14 +7,18 @@ APP.input = (function() {
   var curGame = APP.game;
 
   function init(canvas, gl) {
-    // Mouse move → paddle
+    // Mouse move -> paddle
     canvas.addEventListener('mousemove', function(event) {
-      var normX = (2 * event.pageX / gl.canvas.width) - 1;
       var paddle = curArena.getPaddle();
       if (!paddle) return;
-      // Mappa lineare 1:1 dall'arena allo schermo
-      var x = normX * cfg.arena.width / 2 + cfg.arena.width / 2;
-      // CLAMP sempre ai bordi dell'arena (non bloccare il movimento)
+
+      var rect = gl.canvas.getBoundingClientRect();
+      var useVerticalAxis = APP.camera.getCurrentPreset() === 3;
+      var pointerRatio = useVerticalAxis
+        ? (event.clientY - rect.top) / rect.height
+        : (event.clientX - rect.left) / rect.width;
+
+      var x = pointerRatio * cfg.arena.width;
       x = Math.max(paddle.width / 2, Math.min(cfg.arena.width - paddle.width / 2, x));
       paddle.x = x;
     });
@@ -22,15 +26,12 @@ APP.input = (function() {
     // Mouse click → launch ball
     canvas.addEventListener('mousedown', function() { curGame.launchBall(); });
 
-    // Mouse wheel → FOV zoom
+    // Mouse wheel -> camera zoom
     canvas.addEventListener('wheel', function(event) {
       event.preventDefault();
       var amount = event.deltaY / 100.0;
-      var newFov = cfg.rendering.fieldOfViewDeg - amount;
-      if (newFov < 180 && newFov > 0) {
-        cfg.rendering.fieldOfViewDeg = newFov;
-        APP.storage.save();
-      }
+      APP.camera.zoom(amount);
+      APP.storage.save();
     }, {passive: false});
 
     // Keyboard → camera preset (1-5) + debug info
