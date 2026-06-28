@@ -61,6 +61,8 @@
       bloomScale: 0.25,
       bloomThreshold: 0.66,
       bloomStrength: 0.82,
+      fxaaEnabled: true,
+      fxaaStrength: 0.65,
       specularColor: [1.0, 1.0, 1.0],
       specularShine: 100.0
     },
