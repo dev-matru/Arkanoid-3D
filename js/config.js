@@ -24,7 +24,7 @@
       wallSize: 0.25,
       numOfRows: 5,
       numOfColumns: 8,
-      blocksSpacing: 0.05,
+      blocksSpacing: 0.08,
       lastRowLimitRatio: 3 / 5
     },
 
@@ -90,8 +90,10 @@
 
     colors: {
       codes: [
-        '461E52', 'DD517F', 'E68E36', '556DC8', '7998EE',
-        'A653F5', '8F8CF2', '65B8BF', 'F96CFF', 'FA92FB', '05ffa1'
+        'FF5E00', 'E68E36', 'FF7A00', 'FF9F1C', 'FFB000',
+        'F2D649', 'E6FF4A', 'B6F23A', '8FEC2F', '7AD151',
+        '39FF14', '05FFA1', '22E6B8', '2EE6A6', '00F5D4',
+        '00D4FF', '4CC9F0', '65B8BF', '00B8D9', '2AD4C5'
       ]
     }
   };
