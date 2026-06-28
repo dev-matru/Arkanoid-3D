@@ -64,9 +64,8 @@ APP.geometry = (function() {
       1,0, 1,1, 0.75,1, 0.75,0,
       1,0, 1,1, 0.75,1, 0.75,0,
       0,0.75, 1,0.75, 1,1, 0,1,
-      // TOP & BOTTOM: match front face UV so one grid cell shows
-      1,0, 1,1, 0.75,1, 0.75,0,
-      1,0, 1,1, 0.75,1, 0.75,0
+      1,0, 1,1, 0,1, 0,0,
+      1,0, 1,1, 0,1, 0,0
     ];
     return { vertices: vertices, normals: normals, indices: indices, uvs: uvs };
   }
