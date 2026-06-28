@@ -34,7 +34,7 @@ void main() {
 	vec3 lightDirectionPoint = normalize(lightPosition - fsPosition);
 	vec3 lightColorPoint = lightColor * pow(LTarget / length(lightPosition - fsPosition), LDecay);
 
-	//VAPORWAVE COLOR CORRECTION FILTER
+	//VAPORWAVE COLOR FILTER
 	vec3 vaporwaveColor = vec3(0.15, 0, 0.3);
 
 	//AMBIENT STANDARD

@@ -1,4 +1,4 @@
-// Configurazione centralizzata di gioco
+// Centralized game configuration
 (function() {
   'use strict';
 
@@ -76,9 +76,9 @@
       fixedDt: 0.0083,       // 1/120s = fixed physics timestep
       maxSubSteps: 5,         // max sub-steps per frame
       paddleHitMaxAngle: 65,  // max bounce angle from paddle center
-      paddleVelocityTransfer: 0.5, // % di velocità paddle trasferita
-      speedIncrement: 1.01,   // fattore di accelerazione per rimbalzo paddle
-      maxBallSpeed: 0.5,      // velocità massima palla
+      paddleVelocityTransfer: 0.5, // % of paddle velocity transferred to ball
+      speedIncrement: 1.01,   // speed multiplier per paddle bounce
+      maxBallSpeed: 0.5,      // maximum ball speed
       lookAhead: 2.0         // anticipazione traiettoria per dynamic camera
     },
 

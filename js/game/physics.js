@@ -1,8 +1,8 @@
 'use strict';
-// Fisica: movimento palla, collisioni, rimbalzi con delta-time e sub-stepping
+// Physics: ball movement, collisions, bouncing with delta-time and sub-stepping
 //
-// SISTEMA ANGOLI: 0°=destra, 90°=SU, 180°=sinistra, 270°=giu
-// NOTA: ball.y aumenta VERSO L'ALTO (top wall a y=10), diminuisce VERSO IL BASSO (paddle a y=-0.25)
+// ANGLE SYSTEM: 0°=right, 90°=UP, 180°=left, 270°=down
+// NOTE: ball.y increases UPWARD (top wall at y=10), decreases DOWNWARD (paddle at y=-0.25)
 //
 APP.physics = (function() {
   'use strict';
@@ -28,64 +28,64 @@ APP.physics = (function() {
       'SCORE: ' + cfg.game.score + '/' + cfg.game.maxScore;
   }
 
-  // ---- PADDLE BOUNCE (basato su hit position) ----
+  // ---- PADDLE BOUNCE (based on hit position) ----
   function resolvePaddleBounce(ball, paddle) {
-    // hitPos: -1 (sinistra paddle) ... 0 (centro) ... +1 (destra)
+    // hitPos: -1 (paddle left) ... 0 (center) ... +1 (right)
     var hitPos = (ball.x - paddle.x) / (paddle.width / 2);
     hitPos = Math.max(-1, Math.min(1, hitPos));
 
-    // Velocita paddle per trasferimento orizzontale
+    // Paddle velocity for horizontal transfer
     var paddleVel = paddle.x - prevPaddleX;
 
-    // ANGOLO DI USCITA: la palla deve andare VERSO L'ALTO (y crescente)
-    // Centro paddle (hitPos=0) → 90° (dritto su)
-    // Bordo sinistro (hitPos=-1) → 90+65=155° (su-sinistra)
-    // Bordo destro (hitPos=+1) → 90-65=25° (su-destra)
+    // EXIT ANGLE: ball must go UPWARD (increasing y)
+    // Paddle center (hitPos=0) → 90° (straight up)
+    // Left edge (hitPos=-1) → 90+65=155° (up-left)
+    // Right edge (hitPos=+1) → 90-65=25° (up-right)
     var maxAngle = cfg.physics.paddleHitMaxAngle; // 65
     var newAngle = 90 + hitPos * maxAngle;
     newAngle = ((newAngle % 360) + 360) % 360;
 
-    // Sposta palla SOPRA il paddle (y del paddle + offset verso l'alto)
+    // Move ball ABOVE the paddle (paddle y + offset upward)
     // paddle.y = -0.25, paddle.height/2 = 0.125, ball.radius = 0.2
     // ball.y = -0.25 + 0.125 + 0.2 + 0.01 = 0.085 (sopra il paddle) ✓
     ball.y = paddle.y + paddle.height / 2 + ball.radius + 0.01;
 
-    // Applica angolo + trasferimento velocita paddle
+    // Apply angle + paddle velocity transfer
     var rad = math.degToRad(newAngle);
     var vx = ball.speed * Math.cos(rad);
     var vy = ball.speed * Math.sin(rad);
     vx += paddleVel * cfg.physics.paddleVelocityTransfer;
 
-    // Ricalcola speed e angolo
+    // Recalculate speed and angle
     var newSpeed = Math.sqrt(vx * vx + vy * vy);
     ball.speed = Math.min(newSpeed, cfg.physics.maxBallSpeed);
     ball.angle = Math.atan2(vy, vx) * 180 / Math.PI;
     ball.angle = ((ball.angle % 360) + 360) % 360;
 
-    // Accelerazione progressiva
+    // Progressive acceleration
     ball.speed = Math.min(ball.speed * cfg.physics.speedIncrement, cfg.physics.maxBallSpeed);
 
     playSound('assets/bounce.wav', 0.2);
   }
 
-  // ---- WALL / BLOCK BOUNCE (riflessione assiale + push) ----
+  // ---- WALL / BLOCK BOUNCE (axial reflection + push) ----
   function resolveWallBounce(ball, object) {
-    // Determina quale faccia e stata colpita confrontando gli overlap
+    // Determine which face was hit by comparing overlaps
     var overlapX = (ball.x - object.x) / (object.width / 2 + ball.radius);
     var overlapY = (ball.y - object.y) / (object.height / 2 + ball.radius);
 
     if (Math.abs(overlapX) > Math.abs(overlapY)) {
-      // Rimbalzo VERTICALE (faccia sinistra o destra dell'oggetto)
+      // VERTICAL bounce (left or right face of object)
       ball.angle = 180 - ball.angle;
-      // Push: se ball e a sinistra del centro → push a sinistra, altrimenti a destra
+      // Push: if ball is left of center → push left, otherwise push right
       if (ball.x < object.x)
         ball.x = object.x - object.width / 2 - ball.radius - 0.01;
       else
         ball.x = object.x + object.width / 2 + ball.radius + 0.01;
     } else {
-      // Rimbalzo ORIZZONTALE (faccia sopra o sotto dell'oggetto)
+      // HORIZONTAL bounce (top or bottom face of object)
       ball.angle = 360 - ball.angle;
-      // Push: se ball e sotto il centro → push in giu, altrimenti in su
+      // Push: if ball is below center → push down, otherwise push up
       if (ball.y < object.y)
         ball.y = object.y - object.height / 2 - ball.radius - 0.01;
       else
@@ -94,7 +94,7 @@ APP.physics = (function() {
     ball.angle = ((ball.angle % 360) + 360) % 360;
   }
 
-  // ---- CONTROLLO COLLISIONE: cerchio (palla) vs AABB ----
+  // ---- COLLISION CHECK: circle (ball) vs AABB ----
   function checkBallVsAABB(ball, obj) {
     var halfW = obj.width / 2;
     var halfH = obj.height / 2;
@@ -105,7 +105,7 @@ APP.physics = (function() {
     return (dx * dx + dy * dy) <= (ball.radius * ball.radius);
   }
 
-  // ---- MUOVI PALLA E RILEVA COLLISIONI ----
+  // ---- MOVE BALL AND DETECT COLLISIONS ----
   function moveAndDetect(dt) {
     var ball = curArena.getBall();
     if (!ball) return;
@@ -113,7 +113,7 @@ APP.physics = (function() {
     var speed = ball.speed;
     var rad = math.degToRad(ball.angle);
 
-    // Step movement normalizzato a 60fps
+    // Step movement normalized to 60fps
     var stepX = speed * Math.cos(rad) * dt * 60;
     var stepY = speed * Math.sin(rad) * dt * 60;
 

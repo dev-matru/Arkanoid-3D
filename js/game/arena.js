@@ -1,5 +1,5 @@
 'use strict';
-// Costruzione e gestione dell'arena di gioco
+// Arena construction and management
 APP.arena = (function() {
   'use strict';
   var cfg = APP.config;
