@@ -216,14 +216,13 @@ APP.renderer = (function() {
       obj.uniforms.eyePosition = [0.0, 0.0, 0.0];
       obj.uniforms.uTime = elapsedTime;
 
-      if (obj.type === 'ARENA') {
+      if (obj.type === 'ARENA' || obj.type === 'COVER') {
         obj.uniforms.textureWeight = 0.9;
         obj.uniforms.uEmissiveColor = [0.3, 0.05, 0.5];
         obj.uniforms.uEmissiveStrength = 0.3;
         obj.uniforms.uNeonGrid = 1.0;
         obj.uniforms.uRimStrength = 0.4;
       } else {
-        obj.uniforms.uEmissiveColor = [0.0, 0.0, 0.0];
         obj.uniforms.uEmissiveStrength = 0.0;
         obj.uniforms.uNeonGrid = 0.0;
       }
