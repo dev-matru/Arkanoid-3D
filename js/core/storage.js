@@ -10,7 +10,8 @@ APP.storage = (function() {
     gameMode:     { path: ['game', 'mode'],                    type: 'string' },
     numOfRows:    { path: ['arena', 'numOfRows'],              type: 'number' },
     numOfColumns: { path: ['arena', 'numOfColumns'],           type: 'number' },
-    fieldOfView:  { path: ['rendering', 'fieldOfViewDeg'],     type: 'number' }
+    fieldOfView:  { path: ['rendering', 'fieldOfViewDeg'],     type: 'number' },
+    topDownZoom:  { path: ['rendering', 'topDownOrthoZoom'],    type: 'number' }
   };
 
   // Read a nested value from APP.config given a path array

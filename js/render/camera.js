@@ -21,11 +21,11 @@ APP.camera = (function() {
 
   // Camera presets with optimized framing
   var presets = {
-    1: { name: 'Default',       radius: 14, theta: 0,   phi: 45, targetMode: 'arena',  lerp: 0.06 },
-    2: { name: 'Top-Down',      radius: 18, theta: 0,   phi: 85, targetMode: 'arena',  lerp: 0.05 },
-    3: { name: 'Side View',     radius: 12, theta: 90,  phi: 35, targetMode: 'arena',  lerp: 0.05 },
-    4: { name: 'POV Paddle',    radius: 5,  theta: 0,   phi: 30, targetMode: 'paddle', lerp: 0.06 },
-    5: { name: 'Ball POV',      radius: 12, theta: 'follow', phi: 35, targetMode: 'ball',   lerp: 0.07 }
+    1: { name: 'Default',       radius: 14, theta: 0,   phi: 45, targetMode: 'arena',  lerp: 0.06, projection: 'perspective' },
+    2: { name: 'Top-Down',      radius: 18, theta: 0,   phi: 89, targetMode: 'arena',  lerp: 0.05, projection: 'orthographic' },
+    3: { name: 'Side View',     radius: 12, theta: 90,  phi: 35, targetMode: 'arena',  lerp: 0.05, projection: 'perspective' },
+    4: { name: 'POV Paddle',    radius: 5,  theta: 0,   phi: 30, targetMode: 'paddle', lerp: 0.06, projection: 'perspective' },
+    5: { name: 'Ball POV',      radius: 12, theta: 'follow', phi: 35, targetMode: 'ball',   lerp: 0.07, projection: 'perspective' }
   };
 
   // Angle tracking for Dynamic View (smooth orbital)
@@ -43,6 +43,10 @@ APP.camera = (function() {
 
   function getCurrentPreset() { return currentPreset; }
   function getPresetName() { return presets[currentPreset] ? presets[currentPreset].name : 'Unknown'; }
+  function getProjectionMode() {
+    var preset = presets[currentPreset];
+    return preset && preset.projection ? preset.projection : 'perspective';
+  }
 
   // ---- UPDATE (called every frame) ----
   function update(dt) {
@@ -139,6 +143,13 @@ APP.camera = (function() {
   function getEyePosition() { return [0.0, 0.0, 0.0]; }
 
   function zoom(delta) {
+    if (getProjectionMode() === 'orthographic' && cfg.rendering.topDownOrthographic) {
+      cfg.rendering.topDownOrthoZoom -= delta * 0.08;
+      if (cfg.rendering.topDownOrthoZoom > 1.6) cfg.rendering.topDownOrthoZoom = 1.6;
+      if (cfg.rendering.topDownOrthoZoom < 0.65) cfg.rendering.topDownOrthoZoom = 0.65;
+      return;
+    }
+
     cfg.rendering.fieldOfViewDeg -= delta;
     if (cfg.rendering.fieldOfViewDeg > 170) cfg.rendering.fieldOfViewDeg = 170;
     if (cfg.rendering.fieldOfViewDeg < 5) cfg.rendering.fieldOfViewDeg = 5;
@@ -152,6 +163,7 @@ APP.camera = (function() {
     setPreset: setPreset,
     getCurrentPreset: getCurrentPreset,
     getPresetName: getPresetName,
+    getProjectionMode: getProjectionMode,
     triggerShake: triggerShake
   };
 })();
