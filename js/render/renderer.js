@@ -295,6 +295,18 @@ APP.renderer = (function() {
     }
   }
 
+  function updateCameraLegend() {
+    var currentPreset = APP.camera.getCurrentPreset();
+    var cameraDisplay = document.getElementById('cameraPreset');
+    if (cameraDisplay) cameraDisplay.textContent = APP.camera.getPresetName();
+
+    var options = document.querySelectorAll('.camera-option');
+    for (var i = 0; i < options.length; i++) {
+      var isActive = options[i].getAttribute('data-camera') === String(currentPreset);
+      options[i].classList.toggle('active', isActive);
+    }
+  }
+
   var lastTimestamp = 0;
   var accumulator = 0;
   var FIXED_DT = cfg.physics.fixedDt;
@@ -320,11 +332,7 @@ APP.renderer = (function() {
     // Camera cinematic update (ogni frame, non fixed)
     APP.camera.update(deltaTime);
 
-    // Update camera HUD
-    var cameraDisplay = document.getElementById('cameraPreset');
-    if (cameraDisplay) {
-      cameraDisplay.textContent = '[' + APP.camera.getCurrentPreset() + '] ' + APP.camera.getPresetName();
-    }
+    updateCameraLegend();
 
     updateObjectMatrices();
     renderFrame();

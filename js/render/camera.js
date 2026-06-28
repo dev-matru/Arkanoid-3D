@@ -25,7 +25,7 @@ APP.camera = (function() {
     2: { name: 'Top-Down',      radius: 18, theta: 0,   phi: 85, targetMode: 'arena',  lerp: 0.05 },
     3: { name: 'Side View',     radius: 12, theta: 90,  phi: 35, targetMode: 'arena',  lerp: 0.05 },
     4: { name: 'POV Paddle',    radius: 5,  theta: 0,   phi: 30, targetMode: 'paddle', lerp: 0.06 },
-    5: { name: 'Dynamic View',  radius: 12, theta: 'follow', phi: 35, targetMode: 'ball',   lerp: 0.07 }
+    5: { name: 'Ball POV',      radius: 12, theta: 'follow', phi: 35, targetMode: 'ball',   lerp: 0.07 }
   };
 
   // Angle tracking for Dynamic View (smooth orbital)
