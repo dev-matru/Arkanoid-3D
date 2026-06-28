@@ -65,7 +65,7 @@ APP.physics = (function() {
     // Progressive acceleration
     ball.speed = Math.min(ball.speed * cfg.physics.speedIncrement, cfg.physics.maxBallSpeed);
 
-    playSound('assets/bounce.wav', 0.2);
+    playSound('assets/audio/bounce.wav', 0.2);
   }
 
   // ---- WALL / BLOCK BOUNCE (axial reflection + push) ----
@@ -161,7 +161,7 @@ APP.physics = (function() {
           resolveWallBounce(ball, blocks[i]);
           blocks[i].broken = true;
           APP.camera.triggerShake(0.08);
-          playSound('assets/break.wav', 0.2);
+          playSound('assets/audio/break.wav', 0.2);
           addScore();
           return true;
         }
@@ -191,13 +191,13 @@ APP.physics = (function() {
     if (ball && ball.y < -3) {
       cfg.game.status = 'end';
       APP.camera.triggerShake(0.5);
-      playSound('assets/death.wav', 0.2);
+      playSound('assets/audio/death.wav', 0.2);
       document.getElementById('result').innerText = 'GAME OVER';
     }
     if (cfg.game.score >= cfg.game.maxScore) {
       cfg.game.status = 'end';
       APP.camera.triggerShake(0.3);
-      playSound('assets/win.wav', 0.2);
+      playSound('assets/audio/win.wav', 0.2);
       document.getElementById('result').innerText = 'VICTORY';
     }
 

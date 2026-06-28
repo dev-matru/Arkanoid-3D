@@ -3,7 +3,7 @@
 > A 3D Arkanoid/Breakout game written in **bare WebGL 2.0** — zero dependencies, zero build tools.
 
 <p align="center">
-  <img src="assets/logo.png" width="400" alt="Arkanoid 3D Logo">
+  <img src="assets/images/logo.png" width="400" alt="Arkanoid 3D Logo">
 </p>
 
 Built entirely with vanilla JavaScript and WebGL 2.0, this game delivers a retro-futuristic vaporwave experience with real-time 3D rendering, dynamic lighting, and cinematic camera controls.
@@ -73,7 +73,11 @@ Simply serve the project directory with any HTTP server (Apache, Nginx, XAMPP, e
 Arkanoid-3D/
 ├── index.html              # Entry point
 ├── Dockerfile              # Apache httpd container
-├── assets/                 # Audio, images, SVG icons
+├── assets/
+│   ├── audio/              # Music and sound effects
+│   ├── icons/              # SVG icons and favicon
+│   ├── images/             # UI images
+│   └── textures/           # WebGL textures
 ├── css/
 │   ├── style.css           # Main stylesheet
 │   ├── space.css           # CSS animated starfield
