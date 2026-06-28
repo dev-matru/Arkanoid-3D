@@ -8,12 +8,12 @@ in vec2 fsUV;
 
 out vec4 outColor;
 
-uniform vec3 lightColor; 	//directional light color 
+uniform vec3 lightColor;
 uniform vec3 lightPosition;
-uniform float LTarget;		//g parameter
-uniform float LDecay;		//β parameter
+uniform float LTarget;
+uniform float LDecay;
 
-uniform vec3 mDiffColor; 	//material diffuse color 
+uniform vec3 mDiffColor;
 
 uniform vec3 eyePosition;
 uniform vec3 specularColor;
@@ -22,33 +22,75 @@ uniform float textureWeight;
 
 uniform sampler2D diffuseTexture;
 
+uniform float uTime;
+uniform vec3  uVaporwaveColor;
+uniform float uFillStrength;
+uniform float uRimPower;
+uniform float uRimStrength;
+uniform vec3  uEmissiveColor;
+uniform float uEmissiveStrength;
+uniform float uNeonGrid;
+
 void main() {
+  vec3 nNormal = normalize(fsNormal);
+  vec3 viewDir = normalize(eyePosition - fsPosition);
 
-	vec3 nNormal = normalize(fsNormal);
-  	vec3 eyeDirVec = normalize(eyePosition - fsPosition);
+  vec3 textureColor = texture(diffuseTexture, fsUV).rgb;
+  vec3 baseColor = mDiffColor * (1.0 - textureWeight) + textureColor * textureWeight;
 
-	vec3 textureColor = texture(diffuseTexture, fsUV).rgb;
-	vec3 ambColor = mDiffColor * (1.0 - textureWeight) + textureColor * textureWeight;
+  // POINT LIGHT
+  vec3 lightDir = normalize(lightPosition - fsPosition);
+  float dist = length(lightPosition - fsPosition);
+  vec3 lightIntensity = lightColor * pow(LTarget / dist, LDecay);
 
-	//POINT LIGHT
-	vec3 lightDirectionPoint = normalize(lightPosition - fsPosition);
-	vec3 lightColorPoint = lightColor * pow(LTarget / length(lightPosition - fsPosition), LDecay);
+  // AMBIENT
+  float ambientStrength = 0.55;
+  vec3 ambient = baseColor * ambientStrength;
 
-	//VAPORWAVE COLOR FILTER
-	vec3 vaporwaveColor = vec3(0.15, 0, 0.3);
+  // DIFFUSE (Lambert)
+  float NdotL = max(0.0, dot(nNormal, lightDir));
+  vec3 diffuse = baseColor * lightIntensity * NdotL;
 
-	//AMBIENT STANDARD
- 	vec3 ambientLightColor = vec3(0.6);
-	vec3 ambient = ambientLightColor * ambColor;
+  // FILL LIGHT
+  vec3 fillDir = normalize(-lightDir + vec3(0.0, 0.5, 0.0));
+  float NdotFill = max(0.0, dot(nNormal, fillDir));
+  vec3 fill = baseColor * uFillStrength * NdotFill;
 
-  	//LAMBERT DIFFUSE
-  	vec3 diffuse = ambColor * lightColorPoint * dot(lightDirectionPoint, nNormal);
+  // SPECULAR (Phong)
+  vec3 reflectDir = reflect(-lightDir, nNormal);
+  float NdotV = max(0.0, dot(nNormal, viewDir));
+  float spec = pow(max(0.0, dot(reflectDir, viewDir)), specularShine);
+  vec3 specular = spec * specularColor;
 
-	//PHONG SPECULAR
-	vec3 r = 2.0 * nNormal * dot(lightDirectionPoint, nNormal) - lightDirectionPoint;
-  	vec3 specular = pow(clamp(dot(eyeDirVec, r),0.0,1.0), specularShine) * specularColor;
+  // RIM LIGHT — neon edge glow
+  float rim = 1.0 - NdotV;
+  rim = pow(rim, uRimPower);
+  vec3 rimColor = vec3(1.0, 0.2, 0.8) * rim * uRimStrength;
 
-	//outColor = vec4(clamp( ambient + diffuse + specular, 0.0, 1.0).rgb, 1.0);
-	outColor = vec4(clamp( vaporwaveColor + ambient + diffuse + specular, 0.0, 1.0).rgb, 1.0);
+  // VAPORWAVE TINT
+  vec3 vaporwaveTint = uVaporwaveColor;
 
+  // ---- EMISSIVE GLOW (neon from inside the object) ----
+  float pulse = sin(uTime * 0.6) * 0.3 + 0.7;
+  vec3 emissive = uEmissiveColor * uEmissiveStrength * pulse;
+
+  // ---- NEON GRID PATTERN on floor/walls ----
+  float neonGrid = 0.0;
+  if (uNeonGrid > 0.5) {
+    vec2 gridUV = fsUV * 6.0; // repeat grid 6 times
+    vec2 gridLine = abs(fract(gridUV) - 0.5);
+    float gridMask = 1.0 - smoothstep(0.05, 0.15, min(gridLine.x, gridLine.y));
+    float gridPulse = sin(uTime * 0.5 + fsUV.x * 3.0 + fsUV.y * 2.0) * 0.5 + 0.5;
+    neonGrid = gridMask * 0.25 * gridPulse;
+  }
+
+  // FINAL COMPOSITE
+  vec3 finalColor = ambient + diffuse + specular;
+  finalColor += fill;
+  finalColor += rimColor;
+  finalColor += vaporwaveTint;
+  finalColor += emissive;
+  finalColor += uVaporwaveColor * neonGrid;
+
+  outColor = vec4(clamp(finalColor, 0.0, 1.0).rgb, 1.0);
 }
