@@ -68,7 +68,15 @@ APP.renderer = (function() {
       specularShine: s.specularShine,
       lightColor: l.lightColor,
       LTarget: l.LTarget,
-      LDecay: l.LDecay
+      LDecay: l.LDecay,
+      uTime: 0,
+      uVaporwaveColor: [0.15, 0.0, 0.3],
+      uFillStrength: 0.12,
+      uRimPower: 2.5,
+      uRimStrength: 0.25,
+      uEmissiveColor: [0.0, 0.0, 0.0],
+      uEmissiveStrength: 0.0,
+      uNeonGrid: 0.0
     };
     cubeUniforms = {
       textureWeight: 0.0,
@@ -78,7 +86,15 @@ APP.renderer = (function() {
       specularShine: s.specularShine,
       lightColor: l.lightColor,
       LTarget: l.LTarget,
-      LDecay: l.LDecay
+      LDecay: l.LDecay,
+      uTime: 0,
+      uVaporwaveColor: [0.15, 0.0, 0.3],
+      uFillStrength: 0.12,
+      uRimPower: 2.5,
+      uRimStrength: 0.25,
+      uEmissiveColor: [0.0, 0.0, 0.0],
+      uEmissiveStrength: 0.0,
+      uNeonGrid: 0.0
     };
   }
 
@@ -198,8 +214,19 @@ APP.renderer = (function() {
       obj.uniforms.nMatrix = math.transposeMatrix(normalMatrix);
       obj.uniforms.lightPosition = lightPosTransformed;
       obj.uniforms.eyePosition = [0.0, 0.0, 0.0];
+      obj.uniforms.uTime = elapsedTime;
 
-      if (obj.type === 'ARENA') obj.uniforms.textureWeight = 0.9;
+      if (obj.type === 'ARENA') {
+        obj.uniforms.textureWeight = 0.9;
+        obj.uniforms.uEmissiveColor = [0.3, 0.05, 0.5];
+        obj.uniforms.uEmissiveStrength = 0.3;
+        obj.uniforms.uNeonGrid = 1.0;
+        obj.uniforms.uRimStrength = 0.4;
+      } else {
+        obj.uniforms.uEmissiveColor = [0.0, 0.0, 0.0];
+        obj.uniforms.uEmissiveStrength = 0.0;
+        obj.uniforms.uNeonGrid = 0.0;
+      }
       if (obj.type === 'BLOCK' || obj.type === 'PADDLE') {
         obj.uniforms.mDiffColor = obj.blockColor;
         obj.uniforms.specularColor = obj.blockColor;
@@ -213,8 +240,13 @@ APP.renderer = (function() {
   var lastTimestamp = 0;
   var accumulator = 0;
   var FIXED_DT = cfg.physics.fixedDt;
+  var elapsedTime = 0;
+  var startTime = 0;
 
   function gameLoop(timestamp) {
+    if (startTime === 0) startTime = timestamp;
+    elapsedTime = (timestamp - startTime) / 1000;
+
     // Delta-time in secondi, clamp per tab-switch
     var deltaTime = lastTimestamp ? (timestamp - lastTimestamp) / 1000 : FIXED_DT;
     lastTimestamp = timestamp;
