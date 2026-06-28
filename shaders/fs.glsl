@@ -74,14 +74,15 @@ void main() {
   float pulse = sin(uTime * 0.6) * 0.3 + 0.7;
   vec3 emissive = uEmissiveColor * uEmissiveStrength * pulse;
 
-  // ---- NEON GRID PATTERN on floor/walls (UV-based) ----
+  // ---- NEON GRID PATTERN — basato sulla posizione, non UV ----
   float neonGrid = 0.0;
   if (uNeonGrid > 0.5) {
-    vec2 gridUV = fsUV * 6.0;
-    vec2 gridLine = abs(fract(gridUV) - 0.5);
-    float gridMask = 1.0 - smoothstep(0.05, 0.15, min(gridLine.x, gridLine.y));
-    float gridPulse = sin(uTime * 0.5 + fsUV.x * 3.0 + fsUV.y * 2.0) * 0.5 + 0.5;
-    neonGrid = gridMask * 0.25 * gridPulse;
+    // Griglia 1x1 per faccia usando fsPosition
+    float gridSize = 1.0;
+    vec2 gridPos = abs(fract(fsPosition.xz / gridSize) - 0.5);
+    float line = 1.0 - smoothstep(0.01, 0.06, min(gridPos.x, gridPos.y));
+    float pulse = sin(uTime * 0.7 + fsPosition.x * 2.0 + fsPosition.z * 1.5) * 0.35 + 0.65;
+    neonGrid = line * 0.35 * pulse;
   }
 
   // FINAL COMPOSITE
