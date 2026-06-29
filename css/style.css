@@ -334,12 +334,12 @@ div {
     inset 0 1px 0 rgba(255, 255, 255, 0.045);
 }
 
-.sidenav > div.settings-section {
+.difficulty-section {
   margin-top: 66px;
 }
 
 .advanced-section {
-  margin-top: 0;
+  margin-top: 12px;
 }
 
 .settings-title {
@@ -563,8 +563,16 @@ div {
   color: #00f5d4;
 }
 
-.advanced-section {
+.difficulty-section .advanced-section {
+  margin-left: -16px;
+  margin-right: -16px;
+  margin-bottom: -16px;
   padding: 0;
+  background:
+    linear-gradient(90deg, rgba(0, 245, 212, 0.055), transparent 62%),
+    rgba(0, 0, 0, 0.18);
+  border-top: 1px solid rgba(0, 245, 212, 0.18);
+  border-radius: 0 0 8px 8px;
 }
 
 .advanced-summary {
@@ -572,7 +580,7 @@ div {
   align-items: center;
   justify-content: space-between;
   gap: 14px;
-  padding: 16px;
+  padding: 13px 16px;
   color: #f6fbff;
   cursor: pointer;
   font-size: 15px;
@@ -609,6 +617,10 @@ div {
   font-size: 0;
 }
 
+.advanced-section .settings-divider {
+  margin-top: 0;
+}
+
 .advanced-control {
   display: flex;
   flex-direction: column;
@@ -636,6 +648,7 @@ div {
   display: flex;
   flex-direction: column;
   gap: 12px;
+  margin-top: 8px;
 }
 
 .audio-toggle {
@@ -662,12 +675,6 @@ div {
   font-size: 13px;
   letter-spacing: 1.6px;
   text-transform: uppercase;
-}
-
-.audio-toggle-subtitle {
-  color: rgba(246, 251, 255, 0.46);
-  font-size: 11px;
-  letter-spacing: 0.8px;
 }
 
 .audio-toggle input[type="checkbox"] {

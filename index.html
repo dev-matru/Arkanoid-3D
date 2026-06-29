@@ -17,7 +17,7 @@
   <div id="mySidenav" class="sidenav">
     <a href="javascript:void(0)" class="closebtn" onclick="closeNav()">&times;</a>
     
-    <div class="settings-section">
+    <div class="settings-section difficulty-section">
       <div class="settings-head">
         <h3 class="settings-title">Difficulty</h3>
         <span id="difficultyStatus" class="difficulty-status">Runner</span>
@@ -60,6 +60,34 @@
           <span class="radio-text singularity">Singularity</span>
         </label>
       </form>
+
+      <details class="advanced-section">
+        <summary class="advanced-summary" onclick="toggleAdvancedMenu(event)">
+          <span>Advanced</span>
+          <span class="advanced-glyph">+</span>
+        </summary>
+        <div class="settings-divider"></div>
+        <div class="advanced-control">
+          <label class="select-label" for="ballSpeedInput">Ball speed <span id="ballSpeedValue">0.13</span></label>
+          <input id="ballSpeedInput" type="range" min="0.08" max="0.34" step="0.01" value="0.13" oninput="setAdvancedSetting('ballSpeed', this.value)">
+        </div>
+        <div class="advanced-control">
+          <label class="select-label" for="rowsInput">Rows <span id="rowsValue">5</span></label>
+          <input id="rowsInput" type="range" min="3" max="12" step="1" value="5" oninput="setAdvancedSetting('rows', this.value)">
+        </div>
+        <div class="advanced-control">
+          <label class="select-label" for="columnsInput">Columns <span id="columnsValue">8</span></label>
+          <input id="columnsInput" type="range" min="6" max="14" step="1" value="8" oninput="setAdvancedSetting('columns', this.value)">
+        </div>
+        <div class="advanced-control">
+          <label class="select-label" for="blockHeightInput">Block group height <span id="blockHeightValue">40%</span></label>
+          <input id="blockHeightInput" type="range" min="0.30" max="0.72" step="0.02" value="0.40" oninput="setAdvancedSetting('blockHeight', this.value)">
+        </div>
+        <div class="advanced-control">
+          <label class="select-label" for="paddleWidthInput">Paddle width <span id="paddleWidthValue">2.45</span></label>
+          <input id="paddleWidthInput" type="range" min="1.00" max="3.20" step="0.05" value="2.45" oninput="setAdvancedSetting('paddleWidth', this.value)">
+        </div>
+      </details>
     </div>
 
     <div class="settings-section audio-section">
@@ -71,7 +99,6 @@
       <label class="audio-toggle">
         <span class="audio-toggle-copy">
           <span class="audio-toggle-title">Music</span>
-          <span class="audio-toggle-subtitle">Background track</span>
         </span>
         <input id="musicEnabledInput" type="checkbox" checked onchange="setAudioSetting('musicEnabled', this.checked)">
         <span class="toggle-switch"></span>
@@ -83,7 +110,6 @@
       <label class="audio-toggle">
         <span class="audio-toggle-copy">
           <span class="audio-toggle-title">Sounds</span>
-          <span class="audio-toggle-subtitle">Impacts and events</span>
         </span>
         <input id="sfxEnabledInput" type="checkbox" checked onchange="setAudioSetting('sfxEnabled', this.checked)">
         <span class="toggle-switch"></span>
@@ -94,33 +120,6 @@
       </div>
     </div>
 
-    <details class="settings-section advanced-section">
-      <summary class="advanced-summary" onclick="toggleAdvancedMenu(event)">
-        <span>Advanced</span>
-        <span class="advanced-glyph">+</span>
-      </summary>
-      <div class="settings-divider"></div>
-      <div class="advanced-control">
-        <label class="select-label" for="ballSpeedInput">Ball speed <span id="ballSpeedValue">0.13</span></label>
-        <input id="ballSpeedInput" type="range" min="0.08" max="0.34" step="0.01" value="0.13" oninput="setAdvancedSetting('ballSpeed', this.value)">
-      </div>
-      <div class="advanced-control">
-        <label class="select-label" for="rowsInput">Rows <span id="rowsValue">5</span></label>
-        <input id="rowsInput" type="range" min="3" max="12" step="1" value="5" oninput="setAdvancedSetting('rows', this.value)">
-      </div>
-      <div class="advanced-control">
-        <label class="select-label" for="columnsInput">Columns <span id="columnsValue">8</span></label>
-        <input id="columnsInput" type="range" min="6" max="14" step="1" value="8" oninput="setAdvancedSetting('columns', this.value)">
-      </div>
-      <div class="advanced-control">
-        <label class="select-label" for="blockHeightInput">Block group height <span id="blockHeightValue">40%</span></label>
-        <input id="blockHeightInput" type="range" min="0.30" max="0.72" step="0.02" value="0.40" oninput="setAdvancedSetting('blockHeight', this.value)">
-      </div>
-      <div class="advanced-control">
-        <label class="select-label" for="paddleWidthInput">Paddle width <span id="paddleWidthValue">2.45</span></label>
-        <input id="paddleWidthInput" type="range" min="1.00" max="3.20" step="0.05" value="2.45" oninput="setAdvancedSetting('paddleWidth', this.value)">
-      </div>
-    </details>
   </div> 
   
   <div>
