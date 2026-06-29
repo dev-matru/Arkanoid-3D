@@ -35,6 +35,20 @@ APP.ui = (function() {
     syncUiWithConfig();
   }
 
+  function setAudioSetting(name, value) {
+    if (!cfg.audio) cfg.audio = {};
+
+    if (name === 'musicEnabled' || name === 'sfxEnabled') {
+      cfg.audio[name] = !!value;
+    } else if (name === 'musicVolume' || name === 'sfxVolume') {
+      cfg.audio[name] = Math.max(0, Math.min(100, parseInt(value, 10) || 0));
+    }
+
+    APP.storage.save();
+    if (APP.game && APP.game.syncAudioSettings) APP.game.syncAudioSettings();
+    syncUiWithConfig();
+  }
+
   function toggleAdvancedMenu(event) {
     if (event) event.preventDefault();
     var summary = event && event.currentTarget;
@@ -63,6 +77,7 @@ APP.ui = (function() {
     window.closeNav = closeNav;
     window.setDifficulty = setDifficulty;
     window.setAdvancedSetting = setAdvancedSetting;
+    window.setAudioSetting = setAudioSetting;
     window.toggleAdvancedMenu = toggleAdvancedMenu;
     window.launchBall = function() { APP.game.launchBall(); };
 
@@ -86,6 +101,10 @@ APP.ui = (function() {
     syncAdvancedControl('columnsInput', 'columnsValue', cfg.arena.numOfColumns, 0);
     syncAdvancedControl('blockHeightInput', 'blockHeightValue', APP.difficulty.getBlockGroupHeightRatio(), 2, true);
     syncAdvancedControl('paddleWidthInput', 'paddleWidthValue', cfg.paddle.width, 2);
+    syncAudioControl('musicEnabledInput', cfg.audio.musicEnabled);
+    syncAudioControl('sfxEnabledInput', cfg.audio.sfxEnabled);
+    syncPercentControl('musicVolumeInput', 'musicVolumeValue', cfg.audio.musicVolume);
+    syncPercentControl('sfxVolumeInput', 'sfxVolumeValue', cfg.audio.sfxVolume);
   }
 
   function syncAdvancedControl(inputId, valueId, value, decimals, asPercent) {
@@ -95,6 +114,20 @@ APP.ui = (function() {
 
     if (input) input.value = displayValue;
     if (label) label.innerText = asPercent ? Math.round(Number(value) * 100) + '%' : displayValue;
+  }
+
+  function syncAudioControl(inputId, checked) {
+    var input = document.getElementById(inputId);
+    if (input) input.checked = checked !== false;
+  }
+
+  function syncPercentControl(inputId, valueId, value) {
+    var input = document.getElementById(inputId);
+    var label = document.getElementById(valueId);
+    var displayValue = String(Math.round(Number(value)));
+
+    if (input) input.value = displayValue;
+    if (label) label.innerText = displayValue + '%';
   }
 
   return { init: init, playGame: playGame, openNav: openNav, closeNav: closeNav };

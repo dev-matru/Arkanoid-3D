@@ -139,6 +139,13 @@
       mouseRatio: 2.0
     },
 
+    audio: {
+      musicEnabled: true,
+      sfxEnabled: true,
+      musicVolume: 100,
+      sfxVolume: 100
+    },
+
     physics: {
       collisionEpsilon: 0.1,
       fixedDt: 0.0083,       // 1/120s = fixed physics timestep

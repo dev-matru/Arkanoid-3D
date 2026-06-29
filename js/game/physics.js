@@ -10,15 +10,55 @@ APP.physics = (function() {
   var curArena = APP.arena;
   var math = APP.math;
   var audioPool = {};
+  var currentMusic = null;
+  var currentMusicBaseVolume = 0;
 
   var prevPaddleX = 0;
 
   // ---- AUDIO ----
   function playSound(path, volume) {
+    var type = path.indexOf('song.mp3') !== -1 ? 'music' : 'sfx';
+    var audioCfg = cfg.audio || {};
+    var enabled = type === 'music' ? audioCfg.musicEnabled !== false : audioCfg.sfxEnabled !== false;
+    var level = type === 'music' ? audioCfg.musicVolume : audioCfg.sfxVolume;
+    var finalVolume = volume * ((Number(level) || 0) / 100);
+
+    if (type === 'music') {
+      if (!currentMusic || currentMusic.src.indexOf(path) === -1) {
+        if (currentMusic) currentMusic.pause();
+        currentMusic = new Audio(path);
+        currentMusic.loop = true;
+      }
+      currentMusicBaseVolume = volume;
+      if (!enabled || finalVolume <= 0) {
+        currentMusic.pause();
+        return;
+      }
+      currentMusic.volume = Math.min(1, finalVolume);
+      currentMusic.play().catch(function() {});
+      return;
+    }
+
+    if (!enabled || finalVolume <= 0) return;
+
     if (!audioPool[path]) audioPool[path] = new Audio(path);
     var audio = audioPool[path].cloneNode();
-    audio.volume = volume;
-    audio.play();
+    audio.volume = Math.min(1, finalVolume);
+    audio.play().catch(function() {});
+  }
+
+  function syncAudioSettings() {
+    if (!currentMusic) return;
+
+    var audioCfg = cfg.audio || {};
+    var musicVolume = Number(audioCfg.musicVolume) || 0;
+    currentMusic.volume = Math.min(1, currentMusicBaseVolume * (musicVolume / 100));
+
+    if (audioCfg.musicEnabled === false || musicVolume <= 0) {
+      currentMusic.pause();
+    } else {
+      currentMusic.play().catch(function() {});
+    }
   }
 
   // ---- SCORE ----
@@ -211,6 +251,7 @@ APP.physics = (function() {
   return {
     update: update,
     reset: reset,
-    playSound: playSound
+    playSound: playSound,
+    syncAudioSettings: syncAudioSettings
   };
 })();

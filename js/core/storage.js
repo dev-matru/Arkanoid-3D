@@ -13,6 +13,10 @@ APP.storage = (function() {
     numOfColumns:      { path: ['arena', 'numOfColumns'],           type: 'number' },
     lastRowLimitRatio: { path: ['arena', 'lastRowLimitRatio'],      type: 'number' },
     paddleWidth:       { path: ['paddle', 'width'],                 type: 'number' },
+    musicEnabled:      { path: ['audio', 'musicEnabled'],           type: 'boolean' },
+    sfxEnabled:        { path: ['audio', 'sfxEnabled'],             type: 'boolean' },
+    musicVolume:       { path: ['audio', 'musicVolume'],            type: 'number' },
+    sfxVolume:         { path: ['audio', 'sfxVolume'],              type: 'number' },
     fieldOfView:       { path: ['rendering', 'fieldOfViewDeg'],     type: 'number' },
     topDownZoom:       { path: ['rendering', 'topDownOrthoZoom'],   type: 'number' }
   };
@@ -71,6 +75,7 @@ APP.storage = (function() {
           var value = data[key];
           // Type coercion for safety
           if (expectedType === 'number') value = Number(value);
+          else if (expectedType === 'boolean') value = value === true || value === 'true';
           else if (expectedType === 'string') value = String(value);
           setConfigValue(KEYS[key].path, value);
         }

@@ -62,6 +62,38 @@
       </form>
     </div>
 
+    <div class="settings-section audio-section">
+      <div class="settings-head">
+        <h3 class="settings-title">Audio</h3>
+        <span class="difficulty-status">Mix</span>
+      </div>
+      <div class="settings-divider"></div>
+      <label class="audio-toggle">
+        <span class="audio-toggle-copy">
+          <span class="audio-toggle-title">Music</span>
+          <span class="audio-toggle-subtitle">Background track</span>
+        </span>
+        <input id="musicEnabledInput" type="checkbox" checked onchange="setAudioSetting('musicEnabled', this.checked)">
+        <span class="toggle-switch"></span>
+      </label>
+      <div class="advanced-control audio-volume-control">
+        <label class="select-label" for="musicVolumeInput">Music volume <span id="musicVolumeValue">100%</span></label>
+        <input id="musicVolumeInput" type="range" min="0" max="100" step="5" value="100" oninput="setAudioSetting('musicVolume', this.value)">
+      </div>
+      <label class="audio-toggle">
+        <span class="audio-toggle-copy">
+          <span class="audio-toggle-title">Sounds</span>
+          <span class="audio-toggle-subtitle">Impacts and events</span>
+        </span>
+        <input id="sfxEnabledInput" type="checkbox" checked onchange="setAudioSetting('sfxEnabled', this.checked)">
+        <span class="toggle-switch"></span>
+      </label>
+      <div class="advanced-control audio-volume-control">
+        <label class="select-label" for="sfxVolumeInput">Sound volume <span id="sfxVolumeValue">100%</span></label>
+        <input id="sfxVolumeInput" type="range" min="0" max="100" step="5" value="100" oninput="setAudioSetting('sfxVolume', this.value)">
+      </div>
+    </div>
+
     <details class="settings-section advanced-section">
       <summary class="advanced-summary" onclick="toggleAdvancedMenu(event)">
         <span>Advanced</span>

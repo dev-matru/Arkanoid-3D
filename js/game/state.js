@@ -37,6 +37,7 @@ APP.game = (function() {
     restartGame: restartGame,
     launchBall: launchBall,
     update: update,
-    playSound: APP.physics.playSound
+    playSound: APP.physics.playSound,
+    syncAudioSettings: APP.physics.syncAudioSettings
   };
 })();
