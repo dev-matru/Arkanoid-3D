@@ -7,11 +7,14 @@ APP.storage = (function() {
 
   // Keys to persist (config → localStorage mapping)
   var KEYS = {
-    gameMode:     { path: ['game', 'mode'],                    type: 'string' },
-    numOfRows:    { path: ['arena', 'numOfRows'],              type: 'number' },
-    numOfColumns: { path: ['arena', 'numOfColumns'],           type: 'number' },
-    fieldOfView:  { path: ['rendering', 'fieldOfViewDeg'],     type: 'number' },
-    topDownZoom:  { path: ['rendering', 'topDownOrthoZoom'],    type: 'number' }
+    gameMode:          { path: ['game', 'mode'],                    type: 'string' },
+    ballSpeed:         { path: ['difficulty', 'ballSpeed'],         type: 'number' },
+    numOfRows:         { path: ['arena', 'numOfRows'],              type: 'number' },
+    numOfColumns:      { path: ['arena', 'numOfColumns'],           type: 'number' },
+    lastRowLimitRatio: { path: ['arena', 'lastRowLimitRatio'],      type: 'number' },
+    paddleWidth:       { path: ['paddle', 'width'],                 type: 'number' },
+    fieldOfView:       { path: ['rendering', 'fieldOfViewDeg'],     type: 'number' },
+    topDownZoom:       { path: ['rendering', 'topDownOrthoZoom'],   type: 'number' }
   };
 
   // Read a nested value from APP.config given a path array
@@ -71,6 +74,9 @@ APP.storage = (function() {
           else if (expectedType === 'string') value = String(value);
           setConfigValue(KEYS[key].path, value);
         }
+      }
+      if (APP.difficulty && APP.difficulty.normalizeLoadedSettings) {
+        APP.difficulty.normalizeLoadedSettings();
       }
     } catch (e) {
       console.warn('Arkanoid 3D: cannot load settings', e);

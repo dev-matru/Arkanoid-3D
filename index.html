@@ -18,57 +18,77 @@
     <a href="javascript:void(0)" class="closebtn" onclick="closeNav()">&times;</a>
     
     <div class="settings-section">
-      <h3 class="settings-title">&#9733; Difficulty</h3>
+      <div class="settings-head">
+        <h3 class="settings-title">Difficulty</h3>
+        <span id="difficultyStatus" class="difficulty-status">Runner</span>
+      </div>
       <div class="settings-divider"></div>
       <form class="difficulty-form">
-        <label class="radio-label">
-          <input type="radio" name="difficulty" onchange="setDifficulty(this.value);" value="easy" checked>
+        <label class="radio-label" data-difficulty-option="rookie">
+          <input type="radio" name="difficulty" onchange="setDifficulty(this.value);" value="rookie">
           <span class="radio-custom"></span>
-          <span class="radio-text easy">Easy</span>
+          <span class="radio-text rookie">Rookie</span>
         </label>
-        <label class="radio-label">
-          <input type="radio" name="difficulty" onchange="setDifficulty(this.value);" value="medium">
+        <label class="radio-label" data-difficulty-option="runner">
+          <input type="radio" name="difficulty" onchange="setDifficulty(this.value);" value="runner" checked>
           <span class="radio-custom"></span>
-          <span class="radio-text medium">Medium</span>
+          <span class="radio-text runner">Runner</span>
         </label>
-        <label class="radio-label">
-          <input type="radio" name="difficulty" onchange="setDifficulty(this.value);" value="hard">
+        <label class="radio-label" data-difficulty-option="hacker">
+          <input type="radio" name="difficulty" onchange="setDifficulty(this.value);" value="hacker">
           <span class="radio-custom"></span>
-          <span class="radio-text hard">Hard</span>
+          <span class="radio-text hacker">Hacker</span>
+        </label>
+        <label class="radio-label" data-difficulty-option="glitch">
+          <input type="radio" name="difficulty" onchange="setDifficulty(this.value);" value="glitch">
+          <span class="radio-custom"></span>
+          <span class="radio-text glitch">Glitch</span>
+        </label>
+        <label class="radio-label" data-difficulty-option="overdrive">
+          <input type="radio" name="difficulty" onchange="setDifficulty(this.value);" value="overdrive">
+          <span class="radio-custom"></span>
+          <span class="radio-text overdrive">Overdrive</span>
+        </label>
+        <label class="radio-label" data-difficulty-option="blackout">
+          <input type="radio" name="difficulty" onchange="setDifficulty(this.value);" value="blackout">
+          <span class="radio-custom"></span>
+          <span class="radio-text blackout">Blackout</span>
+        </label>
+        <label class="radio-label" data-difficulty-option="singularity">
+          <input type="radio" name="difficulty" onchange="setDifficulty(this.value);" value="singularity">
+          <span class="radio-custom"></span>
+          <span class="radio-text singularity">Singularity</span>
         </label>
       </form>
     </div>
 
-    <div class="settings-section">
-      <h3 class="settings-title">&#9733; Blocks</h3>
+    <details class="settings-section advanced-section">
+      <summary class="advanced-summary" onclick="toggleAdvancedMenu(event)">
+        <span>Advanced</span>
+        <span class="advanced-glyph">+</span>
+      </summary>
       <div class="settings-divider"></div>
-      <div class="select-group">
-        <div class="select-field">
-          <label class="select-label" for="rowsSelect">Rows</label>
-          <select name="rows" id="rowsSelect" onchange="setRowsNumber(this.value)">
-            <option value="2">2</option>
-            <option value="3">3</option>
-            <option value="4">4</option>
-            <option value="5" selected>5</option>
-            <option value="6">6</option>
-            <option value="7">7</option>
-            <option value="8">8</option>
-          </select>
-        </div>
-        <div class="select-field">
-          <label class="select-label" for="columnsSelect">Columns</label>
-          <select name="columns" id="columnsSelect" onchange="setColumnsNumber(this.value)">
-            <option value="4">4</option>
-            <option value="5">5</option>
-            <option value="6">6</option>
-            <option value="7">7</option>
-            <option value="8" selected>8</option>
-            <option value="9">9</option>
-            <option value="10">10</option>
-          </select>
-        </div>
+      <div class="advanced-control">
+        <label class="select-label" for="ballSpeedInput">Ball speed <span id="ballSpeedValue">0.13</span></label>
+        <input id="ballSpeedInput" type="range" min="0.08" max="0.34" step="0.01" value="0.13" oninput="setAdvancedSetting('ballSpeed', this.value)">
       </div>
-    </div>
+      <div class="advanced-control">
+        <label class="select-label" for="rowsInput">Rows <span id="rowsValue">5</span></label>
+        <input id="rowsInput" type="range" min="3" max="12" step="1" value="5" oninput="setAdvancedSetting('rows', this.value)">
+      </div>
+      <div class="advanced-control">
+        <label class="select-label" for="columnsInput">Columns <span id="columnsValue">8</span></label>
+        <input id="columnsInput" type="range" min="6" max="14" step="1" value="8" oninput="setAdvancedSetting('columns', this.value)">
+      </div>
+      <div class="advanced-control">
+        <label class="select-label" for="blockHeightInput">Block group height <span id="blockHeightValue">40%</span></label>
+        <input id="blockHeightInput" type="range" min="0.30" max="0.72" step="0.02" value="0.40" oninput="setAdvancedSetting('blockHeight', this.value)">
+      </div>
+      <div class="advanced-control">
+        <label class="select-label" for="paddleWidthInput">Paddle width <span id="paddleWidthValue">2.45</span></label>
+        <input id="paddleWidthInput" type="range" min="1.00" max="3.20" step="0.05" value="2.45" oninput="setAdvancedSetting('paddleWidth', this.value)">
+      </div>
+    </details>
   </div> 
   
   <div>
@@ -141,6 +161,7 @@
 <script type="text/javascript" src="js/render/camera.js"></script>
 <script type="text/javascript" src="js/render/renderer.js"></script>
 
+<script type="text/javascript" src="js/ui/stars.js"></script>
 <script type="text/javascript" src="js/ui/menu.js"></script>
 
 <script>

@@ -7,15 +7,72 @@
   APP.config = {
     game: {
       status: 'start',
-      mode: 'easy',
+      mode: 'runner',
       score: 0.0,
       maxScore: 0.0
     },
 
     difficulty: {
-      easy: 0.1,
-      medium: 0.15,
-      hard: 0.2
+      ballSpeed: 0.13,
+      levels: {
+        rookie: {
+          label: 'Rookie',
+          ballSpeed: 0.1,
+          numOfRows: 4,
+          numOfColumns: 7,
+          blockGroupHeightRatio: 0.34,
+          paddleWidth: 3.0
+        },
+        runner: {
+          label: 'Runner',
+          ballSpeed: 0.13,
+          numOfRows: 5,
+          numOfColumns: 8,
+          blockGroupHeightRatio: 0.4,
+          paddleWidth: 2.45
+        },
+        hacker: {
+          label: 'Hacker',
+          ballSpeed: 0.16,
+          numOfRows: 6,
+          numOfColumns: 9,
+          blockGroupHeightRatio: 0.48,
+          paddleWidth: 2.0
+        },
+        glitch: {
+          label: 'Glitch',
+          ballSpeed: 0.2,
+          numOfRows: 7,
+          numOfColumns: 10,
+          blockGroupHeightRatio: 0.53,
+          paddleWidth: 1.75
+        },
+        overdrive: {
+          label: 'Overdrive',
+          ballSpeed: 0.23,
+          numOfRows: 8,
+          numOfColumns: 11,
+          blockGroupHeightRatio: 0.58,
+          paddleWidth: 1.5
+        },
+        blackout: {
+          label: 'Blackout',
+          ballSpeed: 0.28,
+          numOfRows: 10,
+          numOfColumns: 13,
+          blockGroupHeightRatio: 0.66,
+          paddleWidth: 1.2
+        },
+        singularity: {
+          label: 'Singularity',
+          ballSpeed: 0.34,
+          numOfRows: 12,
+          numOfColumns: 14,
+          blockGroupHeightRatio: 0.72,
+          paddleWidth: 1.0
+        }
+      },
+      order: ['rookie', 'runner', 'hacker', 'glitch', 'overdrive', 'blackout', 'singularity']
     },
 
     arena: {
@@ -25,7 +82,7 @@
       numOfRows: 5,
       numOfColumns: 8,
       blocksSpacing: 0.08,
-      lastRowLimitRatio: 3 / 5
+      lastRowLimitRatio: 0.6
     },
 
     ball: {
@@ -34,7 +91,7 @@
     },
 
     paddle: {
-      width: 2.5,
+      width: 2.45,
       height: 0.25,
       yPosition: -0.25,
       color: [0.8, 0.8, 0.8]
@@ -102,4 +159,87 @@
       ]
     }
   };
+
+  APP.difficulty = (function() {
+    var legacyModes = {
+      easy: 'rookie',
+      low: 'rookie',
+      medium: 'runner',
+      normal: 'runner',
+      hard: 'hacker',
+      high: 'hacker',
+      insane: 'blackout'
+    };
+
+    function getPreset(level) {
+      return APP.config.difficulty.levels[level] || null;
+    }
+
+    function round(value) {
+      return Math.round(value * 1000) / 1000;
+    }
+
+    function getBlockGroupHeightRatio() {
+      return round(1 - APP.config.arena.lastRowLimitRatio);
+    }
+
+    function applyPreset(level) {
+      var preset = getPreset(level) || getPreset('runner');
+      var cfg = APP.config;
+
+      cfg.game.mode = getPreset(level) ? level : 'runner';
+      cfg.difficulty.ballSpeed = preset.ballSpeed;
+      cfg.arena.numOfRows = preset.numOfRows;
+      cfg.arena.numOfColumns = preset.numOfColumns;
+      cfg.arena.lastRowLimitRatio = round(1 - preset.blockGroupHeightRatio);
+      cfg.paddle.width = preset.paddleWidth;
+    }
+
+    function markCustom() {
+      APP.config.game.mode = 'custom';
+    }
+
+    function valuesMatchPreset(preset) {
+      var cfg = APP.config;
+      return round(cfg.difficulty.ballSpeed) === round(preset.ballSpeed) &&
+        cfg.arena.numOfRows === preset.numOfRows &&
+        cfg.arena.numOfColumns === preset.numOfColumns &&
+        getBlockGroupHeightRatio() === round(preset.blockGroupHeightRatio) &&
+        round(cfg.paddle.width) === round(preset.paddleWidth);
+    }
+
+    function getDisplayLabel() {
+      var cfg = APP.config;
+      var preset = getPreset(cfg.game.mode);
+      if (preset && valuesMatchPreset(preset)) return preset.label;
+      if (cfg.game.mode !== 'custom') cfg.game.mode = 'custom';
+      return 'Custom';
+    }
+
+    function normalizeLoadedSettings() {
+      var cfg = APP.config;
+      if (legacyModes[cfg.game.mode]) cfg.game.mode = legacyModes[cfg.game.mode];
+
+      if (cfg.game.mode === 'custom') {
+        var fallback = getPreset('runner');
+        cfg.difficulty.ballSpeed = Number(cfg.difficulty.ballSpeed) || fallback.ballSpeed;
+        cfg.arena.numOfRows = Number(cfg.arena.numOfRows) || fallback.numOfRows;
+        cfg.arena.numOfColumns = Number(cfg.arena.numOfColumns) || fallback.numOfColumns;
+        cfg.arena.lastRowLimitRatio = Number(cfg.arena.lastRowLimitRatio) || round(1 - fallback.blockGroupHeightRatio);
+        cfg.paddle.width = Number(cfg.paddle.width) || fallback.paddleWidth;
+        return;
+      }
+
+      applyPreset(getPreset(cfg.game.mode) ? cfg.game.mode : 'runner');
+    }
+
+    return {
+      applyPreset: applyPreset,
+      getPreset: getPreset,
+      getDisplayLabel: getDisplayLabel,
+      getBlockGroupHeightRatio: getBlockGroupHeightRatio,
+      markCustom: markCustom,
+      normalizeLoadedSettings: normalizeLoadedSettings
+    };
+  })();
 })();

@@ -6,7 +6,7 @@
                 <g id="Outlined-/-AV-/-play_circle_filled" transform="translate(102.000000, 98.000000)">
                     <g>
                         <polygon id="Path" points="0 0 24 0 24 24 0 24"></polygon>
-                        <path d="M12,2 C6.48,2 2,6.48 2,12 C2,17.52 6.48,22 12,22 C17.52,22 22,17.52 22,12 C22,6.48 17.52,2 12,2 Z M10,16.5 L10,7.5 L16,12 L10,16.5 Z" id="🔹-Icon-Color" fill="#000000"></path>
+                        <path d="M12,2 C6.48,2 2,6.48 2,12 C2,17.52 6.48,22 12,22 C17.52,22 22,17.52 22,12 C22,6.48 17.52,2 12,2 Z M10,16.5 L10,7.5 L16,12 L10,16.5 Z" id="Icon-Color" fill="#ffffff"></path>
                     </g>
                 </g>
             </g>

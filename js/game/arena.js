@@ -27,7 +27,7 @@ APP.arena = (function() {
       y: 0.2,
       radius: b.radius,
       angle: randomBallAngle(),
-      speed: cfg.difficulty[cfg.game.mode],
+      speed: cfg.difficulty.ballSpeed,
       points: []
     };
     for (var angle = 0; angle < 2 * Math.PI; angle += 2 * Math.PI / b.numOfPoints) {
