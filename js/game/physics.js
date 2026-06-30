@@ -2,7 +2,7 @@
 // Physics: ball movement, collisions, bouncing with delta-time and sub-stepping
 //
 // ANGLE SYSTEM: 0°=right, 90°=UP, 180°=left, 270°=down
-// NOTE: ball.y increases UPWARD (top wall at y=10), decreases DOWNWARD (paddle at y=-0.25)
+// NOTE: ball.y increases UPWARD (top wall at y=10), decreases DOWNWARD.
 //
 APP.physics = (function() {
   'use strict';
@@ -86,8 +86,6 @@ APP.physics = (function() {
     newAngle = ((newAngle % 360) + 360) % 360;
 
     // Move ball ABOVE the paddle (paddle y + offset upward)
-    // paddle.y = -0.25, paddle.height/2 = 0.125, ball.radius = 0.2
-    // ball.y = -0.25 + 0.125 + 0.2 + 0.01 = 0.085 (sopra il paddle) ✓
     ball.y = paddle.y + paddle.height / 2 + ball.radius + 0.01;
 
     // Apply angle + paddle velocity transfer

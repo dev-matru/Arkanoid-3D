@@ -18,8 +18,11 @@ APP.input = (function() {
         ? (event.clientY - rect.top) / rect.height
         : (event.clientX - rect.left) / rect.width;
 
+      var wallInnerEdge = cfg.arena.wallSize / 2;
+      var minX = wallInnerEdge + paddle.width / 2;
+      var maxX = cfg.arena.width - wallInnerEdge - paddle.width / 2;
       var x = pointerRatio * cfg.arena.width;
-      x = Math.max(paddle.width / 2, Math.min(cfg.arena.width - paddle.width / 2, x));
+      x = Math.max(minX, Math.min(maxX, x));
       paddle.x = x;
     });
 

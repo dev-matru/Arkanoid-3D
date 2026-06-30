@@ -24,7 +24,7 @@ APP.arena = (function() {
     // BALL
     ball = {
       x: a.width / 2,
-      y: 0.2,
+      y: p.yPosition + p.height / 2 + b.radius + 0.01,
       radius: b.radius,
       angle: randomBallAngle(),
       speed: cfg.difficulty.ballSpeed,

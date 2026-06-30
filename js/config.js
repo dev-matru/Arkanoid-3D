@@ -93,7 +93,7 @@
     paddle: {
       width: 2.45,
       height: 0.25,
-      yPosition: -0.25,
+      yPosition: 0.35,
       color: [0.8, 0.8, 0.8]
     },
 
