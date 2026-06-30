@@ -4,13 +4,102 @@ APP.ui = (function() {
   'use strict';
   var cfg = APP.config;
   var curRenderer = APP.renderer;
+  var gameSettingsOpen = false;
+  var pausedStatus = null;
+  var settingsChangedDuringPause = false;
+  var restartWarningAccepted = false;
 
   function openNav() { document.getElementById('mySidenav').style.width = '400px'; }
-  function closeNav() { document.getElementById('mySidenav').style.width = '0'; }
+
+  function closeNav() {
+    if (gameSettingsOpen && settingsChangedDuringPause && !restartWarningAccepted) {
+      showSettingsRestartModal();
+      return;
+    }
+
+    finishCloseNav();
+  }
+
+  function finishCloseNav() {
+    document.getElementById('mySidenav').style.width = '0';
+
+    if (gameSettingsOpen) {
+      if (cfg.game.status === 'pause') {
+        cfg.game.status = pausedStatus || 'start';
+      }
+
+      gameSettingsOpen = false;
+      pausedStatus = null;
+      settingsChangedDuringPause = false;
+      restartWarningAccepted = false;
+      hideSettingsRestartModal();
+    }
+  }
+
+  function isGameVisible() {
+    var mainArea = document.getElementById('mainArea');
+    return !!mainArea && mainArea.style.display === 'none';
+  }
+
+  function openGameSettings() {
+    if (!isGameVisible() || !curRenderer.isInitialized()) {
+      openNav();
+      return;
+    }
+
+    gameSettingsOpen = true;
+    settingsChangedDuringPause = false;
+    restartWarningAccepted = false;
+    pausedStatus = cfg.game.status;
+    if (cfg.game.status !== 'end') cfg.game.status = 'pause';
+    openNav();
+  }
+
+  function markSettingsChangedDuringGame() {
+    if (gameSettingsOpen && curRenderer.isInitialized()) {
+      settingsChangedDuringPause = true;
+    }
+  }
+
+  function showSettingsRestartModal() {
+    var modal = document.getElementById('settingsRestartModal');
+    if (!modal) return;
+    modal.classList.add('visible');
+    modal.setAttribute('aria-hidden', 'false');
+  }
+
+  function hideSettingsRestartModal() {
+    var modal = document.getElementById('settingsRestartModal');
+    if (!modal) return;
+    modal.classList.remove('visible');
+    modal.setAttribute('aria-hidden', 'true');
+  }
+
+  function confirmSettingsRestart() {
+    restartWarningAccepted = true;
+    hideSettingsRestartModal();
+    restartCurrentGameAfterSettingChange();
+    finishCloseNav();
+  }
+
+  function cancelSettingsRestart() {
+    hideSettingsRestartModal();
+    syncUiWithConfig();
+  }
+
+  function restartCurrentGameAfterSettingChange() {
+    if (!gameSettingsOpen || !curRenderer.isInitialized()) return;
+
+    settingsChangedDuringPause = true;
+    pausedStatus = 'start';
+    curRenderer.start();
+    cfg.game.status = 'pause';
+  }
 
   function setDifficulty(value) {
     APP.difficulty.applyPreset(value);
     APP.storage.save();
+    markSettingsChangedDuringGame();
     syncUiWithConfig();
   }
 
@@ -32,6 +121,7 @@ APP.ui = (function() {
 
     APP.difficulty.markCustom();
     APP.storage.save();
+    markSettingsChangedDuringGame();
     syncUiWithConfig();
   }
 
@@ -46,6 +136,7 @@ APP.ui = (function() {
 
     APP.storage.save();
     if (APP.game && APP.game.syncAudioSettings) APP.game.syncAudioSettings();
+    markSettingsChangedDuringGame();
     syncUiWithConfig();
   }
 
@@ -61,6 +152,7 @@ APP.ui = (function() {
     document.getElementById('mainArea').style.display = 'none';
     document.getElementById('legend').style.display = 'block';
     document.getElementById('score').style.display = 'block';
+    document.getElementById('gameSettingsBtn').style.display = 'flex';
 
     if (!curRenderer.isInitialized()) {
       curRenderer.init(function() {
@@ -74,15 +166,34 @@ APP.ui = (function() {
   function init() {
     window.playGame = playGame;
     window.openNav = openNav;
+    window.openGameSettings = openGameSettings;
     window.closeNav = closeNav;
+    window.confirmSettingsRestart = confirmSettingsRestart;
+    window.cancelSettingsRestart = cancelSettingsRestart;
     window.setDifficulty = setDifficulty;
     window.setAdvancedSetting = setAdvancedSetting;
     window.setAudioSetting = setAudioSetting;
     window.toggleAdvancedMenu = toggleAdvancedMenu;
     window.launchBall = function() { APP.game.launchBall(); };
+    window.addEventListener('mousedown', handleOutsideMenuClick);
 
     // Sincronizza UI settings con i valori caricati da localStorage
     syncUiWithConfig();
+  }
+
+  function handleOutsideMenuClick(event) {
+    var sidenav = document.getElementById('mySidenav');
+    if (!sidenav || sidenav.style.width === '0px' || sidenav.style.width === '') return;
+
+    var modal = document.getElementById('settingsRestartModal');
+    var settingsButton = document.getElementById('gameSettingsBtn');
+    var clickedInsideMenu = sidenav.contains(event.target);
+    var clickedInsideModal = modal && modal.contains(event.target);
+    var clickedSettingsButton = settingsButton && settingsButton.contains(event.target);
+
+    if (!clickedInsideMenu && !clickedInsideModal && !clickedSettingsButton) {
+      closeNav();
+    }
   }
 
   function syncUiWithConfig() {

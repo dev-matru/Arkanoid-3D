@@ -10,6 +10,7 @@ APP.input = (function() {
     // Mouse move -> paddle
     canvas.addEventListener('mousemove', function(event) {
       var paddle = curArena.getPaddle();
+      if (cfg.game.status === 'pause') return;
       if (!paddle) return;
 
       var rect = gl.canvas.getBoundingClientRect();

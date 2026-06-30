@@ -609,6 +609,10 @@ APP.renderer = (function() {
 
   function start() {
     if (animationId) cancelAnimationFrame(animationId);
+    lastTimestamp = 0;
+    accumulator = 0;
+    elapsedTime = 0;
+    startTime = 0;
     curGame.restartGame();
     buildScene();
     animationId = requestAnimationFrame(gameLoop);

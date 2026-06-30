@@ -215,6 +215,11 @@ APP.physics = (function() {
     var ball = curArena.getBall();
     var paddle = curArena.getPaddle();
 
+    if (status === 'pause') {
+      if (paddle) prevPaddleX = paddle.x;
+      return;
+    }
+
     if (status === 'start') {
       if (ball && paddle) {
         prevPaddleX = paddle.x;
